@@ -1,0 +1,9 @@
+# Ignore intelliJ config
+.idea
+*.iml
+
+# Ignore build artifacts
+build/
+
+# Ignore dev files
+node_modules
