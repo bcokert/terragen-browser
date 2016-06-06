@@ -4,7 +4,7 @@
   "description": "A web browser and interactive client for the Terragen service",
   "main": "index.jsx",
   "scripts": {
-    "dev": "webpack -d --watch",
+    "dev": "webpack-dev-server --colors --port 1334",
     "build": "webpack -p"
   },
   "repository": {
@@ -31,6 +31,7 @@
     "less": "^2.7.1",
     "less-loader": "^2.2.3",
     "style-loader": "^0.13.1",
-    "webpack": "^1.13.1"
+    "webpack": "^1.13.1",
+    "webpack-dev-server": "^1.14.1"
   }
 }
