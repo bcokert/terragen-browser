@@ -4,13 +4,16 @@ html {
 
 body {
   font-family: "Open Sans";
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 100;
   color: #000;
 
   margin: 0;
   padding: 0;
   background-color: #ffffff;
+
+  width: 100%;
+  height: 100%;
 
   .x-label {
     font-size: 14px;
@@ -47,5 +50,28 @@ body {
     -webkit-box-shadow: inset 1px 1px 3px #abbccd;
     -moz-box-shadow: inset 1px 1px 3px #abbccd;
     box-shadow: inset 1px 1px 3px #abbccd;
+  }
+}
+
+.App {
+  &>.-mainPage {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    &>.-column {
+      flex: 1 1 auto;
+
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: flex-start;
+      align-items: center;
+
+      & > .-title {
+        font-size: 22px;
+        font-weight: 500;
+      }
+    }
   }
 }

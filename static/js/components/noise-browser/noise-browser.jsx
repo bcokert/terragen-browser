@@ -2,7 +2,8 @@
 
 var React = require("react");
 var Plotly = require("plotly.js");
-var Request = require("../../ajax/request");
+var Ajax = require("../../ajax/ajax");
+var TextField = require("../control/text-field/text-field.jsx");
 
 require("./noise-browser.less");
 
@@ -15,9 +16,9 @@ class NoiseBrowser1D extends React.Component {
             y: [],
             mode: "lines",
 
-            from: 0,
-            to: 10,
-            resolution: 20,
+            from: "0",
+            to: "5",
+            resolution: "40",
             noiseFunction: props.initialNoiseFunction,
 
             errors: []
@@ -31,7 +32,6 @@ class NoiseBrowser1D extends React.Component {
 
         this.componentDidMount = this.componentDidMount.bind(this);
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
-        this.componentWillUnmount = this.componentWillUnmount.bind(this);
     }
 
     componentDidMount () {
@@ -57,11 +57,6 @@ class NoiseBrowser1D extends React.Component {
             Plotly.deleteTraces(this._plotArea, 0);
             Plotly.addTraces(this._plotArea, this.getPlot());
         }
-    }
-
-    componentWillUnmount () {
-        var cruft = document.getElementById("js-plotly-tester");
-        cruft.parentNode.removeChild(cruft);
     }
 
     getLayout () {
@@ -93,12 +88,16 @@ class NoiseBrowser1D extends React.Component {
     }
 
     fetchNoise () {
-        Request.Get(Request.AddParams(this.props.endpoint, {
-            from: this.state.from,
-            to: this.state.to,
-            resolution: this.state.resolution,
-            noiseFunction: this.state.noiseFunction
-        })).then(response => {
+        Ajax.request({
+            url: this.props.endpoint,
+            method: "GET",
+            queryParams: {
+                from: this.state.from,
+                to: this.state.to,
+                resolution: this.state.resolution,
+                noiseFunction: this.state.noiseFunction
+            }
+        }).then(response => {
             if (response.rawNoise && response.rawNoise.value && response.rawNoise.x) {
                 this.setState({
                     x: response.rawNoise.x,
@@ -109,8 +108,8 @@ class NoiseBrowser1D extends React.Component {
                 throw new Error("Invalid response from server: " + JSON.stringify(response));
             }
         }).catch(e => {
-            this.setState({
-                errors: [e.error]
+            this.setState({ 
+                errors: [e.message]
             });
         });
     }
@@ -126,23 +125,16 @@ class NoiseBrowser1D extends React.Component {
                     <span className="x-label">{this.props.displayName}</span>
                 </div>
                 <div className="-control -top">
-                    <span className="x-label">From:</span>
-                    <input className="x-input" onChange={e => this.setState({from: e.target.value})} type="text" value={this.state.from}/>
-                    <span className="x-label">To:</span>
-                    <input className="x-input" onChange={e => this.setState({to: e.target.value})} type="text" value={this.state.to}/>
-                    <span className="x-label">Resolution:</span>
-                    <input className="x-input" onChange={e => this.setState({resolution: e.target.value})} type="text" value={this.state.resolution}/>
-                    <span className="x-label">NoiseFunction:</span>
-                    <span className="x-value">{this.state.noiseFunction}</span>
+                    <TextField label="From" onChange={v => this.setState({from: v})} validate={v => !isNaN(v) && String(parseFloat(v)).length === v.length} value={this.state.from}/>
+                    <TextField label="To" onChange={v => this.setState({to: v})} validate={v => !isNaN(v) && String(parseFloat(v)).length === v.length} value={this.state.to}/>
+                    <TextField label="Resolution" onChange={v => this.setState({resolution: v})} validate={v => !isNaN(v) && String(parseInt(v)).length === v.length} value={this.state.resolution}/>
+                    <TextField label="NoiseFunction" readOnly value={this.state.noiseFunction}/>
                 </div>
                 <div className="-errors">
                     {this.renderErrors()}
                 </div>
                 <div className="-plotArea" ref={node => this._plotArea = node}></div>
-                <div className="-control -bottom">
-                    <span className="x-label">First Ten Points:</span>
-                    <span className="x-value">{this.state.x.slice(0, 10).map((x, i) => "(" + x + "," + this.state.y[i] + ")").join(", ")}</span>
-                </div>
+                <div className="-control -bottom"></div>
             </div>
         );
     }
