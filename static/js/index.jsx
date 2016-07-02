@@ -16,23 +16,28 @@ class App extends React.Component {
 
         this.changePage = this.changePage.bind(this);
         this.onPageReload = this.onPageReload.bind(this);
+        this.onPageRefresh = this.onPageRefresh.bind(this);
     }
 
     componentDidMount () {
         window.addEventListener("popstate", this.onPageReload);
+        window.onload = this.onPageRefresh;
+    }
+
+    onPageRefresh () {
+        this.setState({page: history.state && history.state.page ? history.state.page : "Main"});
     }
 
     onPageReload (e) {
-        const path = e.target.location.pathname;
-        if (path === "/") {
+        if (!e || typeof e !== "object" || !e.state) {
             this.setState({page: "Main"});
         } else {
-            this.setState({page: path.slice(1)});
+            this.setState({page: e.state.page});
         }
     }
 
     changePage (newPage) {
-        history.pushState(null, newPage, newPage);
+        history.pushState({page: newPage}, newPage, "/");
         this.setState({
             page: newPage
         });
@@ -61,23 +66,23 @@ class App extends React.Component {
                 browserList={[{
                         displayName: "Red Noise",
                         endpoint: "http://localhost:8080/noise",
-                        noiseFunction: "red:1d"
+                        noiseFunction: "red"
                     },{
                         displayName: "Pink Noise",
                         endpoint: "http://localhost:8080/noise",
-                        noiseFunction: "pink:1d"
+                        noiseFunction: "pink"
                     },{
                         displayName: "White Noise",
                         endpoint: "http://localhost:8080/noise",
-                        noiseFunction: "white:1d"
+                        noiseFunction: "white"
                     },{
                         displayName: "Blue Noise",
                         endpoint: "http://localhost:8080/noise",
-                        noiseFunction: "blue:1d"
+                        noiseFunction: "blue"
                     },{
                         displayName: "Violet Noise",
                         endpoint: "http://localhost:8080/noise",
-                        noiseFunction: "violet:1d"
+                        noiseFunction: "violet"
                     }]}
                 description="Spectral Noise is created from random sinusoids of various frequencies, combined via a weighted sum, where the weights are related to the frequency"
                 generator="Random"

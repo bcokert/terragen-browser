@@ -98,9 +98,9 @@ class NoiseBrowser1D extends React.Component {
                 noiseFunction: this.state.noiseFunction
             }
         }).then(response => {
-            if (response.rawNoise && response.rawNoise.value && response.rawNoise.x) {
+            if (response.rawNoise && response.rawNoise.value && response.rawNoise.t1) {
                 this.setState({
-                    x: response.rawNoise.x,
+                    x: response.rawNoise.t1,
                     y: response.rawNoise.value,
                     errors: []
                 });
