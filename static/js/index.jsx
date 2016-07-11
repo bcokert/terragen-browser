@@ -48,10 +48,11 @@ class App extends React.Component {
             <div className="-mainPage">
                 <div className="-column">
                     <p className="-title">1D</p>
-                    <Button onClick={() => this.changePage("SinusoidalBrowser")}>Spectral Noise</Button>
+                    <Button onClick={() => this.changePage("Spectral1D")}>Spectral Noise 1D</Button>
                 </div>
                 <div className="-column">
                     <p className="-title">2D</p>
+                    <Button onClick={() => this.changePage("Spectral2D")}>Spectral Noise 2D</Button>
                 </div>
                 <div className="-column">
                     <p className="-title">3D</p>
@@ -60,30 +61,73 @@ class App extends React.Component {
         );
     }
 
-    renderBrowserList () {
+    renderSpectral1DList () {
         return (
             <NoiseBrowserList
                 browserList={[{
-                        displayName: "Red Noise",
-                        endpoint: "http://localhost:8080/noise",
-                        noiseFunction: "red"
-                    },{
-                        displayName: "Pink Noise",
-                        endpoint: "http://localhost:8080/noise",
-                        noiseFunction: "pink"
-                    },{
-                        displayName: "White Noise",
-                        endpoint: "http://localhost:8080/noise",
-                        noiseFunction: "white"
-                    },{
-                        displayName: "Blue Noise",
-                        endpoint: "http://localhost:8080/noise",
-                        noiseFunction: "blue"
-                    },{
-                        displayName: "Violet Noise",
-                        endpoint: "http://localhost:8080/noise",
-                        noiseFunction: "violet"
-                    }]}
+                    dimension: 1,
+                    displayName: "Red Noise",
+                    endpoint: "http://localhost:8080/noise",
+                    noiseFunction: "red"
+                },{
+                    dimension: 1,
+                    displayName: "Pink Noise",
+                    endpoint: "http://localhost:8080/noise",
+                    noiseFunction: "pink"
+                },{
+                    dimension: 1,
+                    displayName: "White Noise",
+                    endpoint: "http://localhost:8080/noise",
+                    noiseFunction: "white"
+                },{
+                    dimension: 1,
+                    displayName: "Blue Noise",
+                    endpoint: "http://localhost:8080/noise",
+                    noiseFunction: "blue"
+                },{
+                    dimension: 1,
+                    displayName: "Violet Noise",
+                    endpoint: "http://localhost:8080/noise",
+                    noiseFunction: "violet"
+                }]}
+                description="Spectral Noise is created from random sinusoids of various frequencies, combined via a weighted sum, where the weights are related to the frequency"
+                generator="Random"
+                presetCollectionName="Spectral Noise"
+                synthesizer="Octave"
+                transformer="Sinusoid"
+            />
+        );
+    }
+
+    renderSpectral2DList () {
+        return (
+            <NoiseBrowserList
+                browserList={[{
+                    dimension: 2,
+                    displayName: "Red Noise",
+                    endpoint: "http://localhost:8080/noise",
+                    noiseFunction: "red"
+                },{
+                    dimension: 2,
+                    displayName: "Pink Noise",
+                    endpoint: "http://localhost:8080/noise",
+                    noiseFunction: "pink"
+                },{
+                    dimension: 2,
+                    displayName: "White Noise",
+                    endpoint: "http://localhost:8080/noise",
+                    noiseFunction: "white"
+                },{
+                    dimension: 2,
+                    displayName: "Blue Noise",
+                    endpoint: "http://localhost:8080/noise",
+                    noiseFunction: "blue"
+                },{
+                    dimension: 2,
+                    displayName: "Violet Noise",
+                    endpoint: "http://localhost:8080/noise",
+                    noiseFunction: "violet"
+                }]}
                 description="Spectral Noise is created from random sinusoids of various frequencies, combined via a weighted sum, where the weights are related to the frequency"
                 generator="Random"
                 presetCollectionName="Spectral Noise"
@@ -99,8 +143,11 @@ class App extends React.Component {
             case "Main":
                 page = this.renderMainPage();
                 break;
-            case "SinusoidalBrowser":
-                page = this.renderBrowserList();
+            case "Spectral1D":
+                page = this.renderSpectral1DList();
+                break;
+            case "Spectral2D":
+                page = this.renderSpectral2DList();
                 break;
             default:
                 page = null;

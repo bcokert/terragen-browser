@@ -1,9 +1,8 @@
 "use strict";
 
 var React = require("react");
-var NoiseBrowser1D = require("../noise-browser/noise-browser.jsx");
+var NoiseBrowser = require("../noise-browser/noise-browser.jsx");
 var TextField = require("../control/text-field/text-field.jsx");
-var Button = require("../control/button/button.jsx");
 
 require("./noise-browser-list.less");
 
@@ -13,7 +12,7 @@ class NoiseBrowserList extends React.Component {
     }
 
     renderNoiseBrowsers () {
-        return this.props.browserList.map((browserData, i) => <NoiseBrowser1D displayName={browserData.displayName} endpoint={browserData.endpoint} initialNoiseFunction={browserData.noiseFunction} key={"NoiseBrowser1D_" + i}/>);
+        return this.props.browserList.map((browserData, i) => <NoiseBrowser dimension={browserData.dimension} displayName={browserData.displayName} endpoint={browserData.endpoint} initialNoiseFunction={browserData.noiseFunction} key={"NoiseBrowser1D_" + i}/>);
     }
 
     render () {
@@ -39,6 +38,7 @@ NoiseBrowserList.displayName = "NoiseBrowserList";
 
 NoiseBrowserList.propTypes = {
     browserList: React.PropTypes.arrayOf(React.PropTypes.shape({
+        dimension: React.PropTypes.number.isRequired,
         displayName: React.PropTypes.string.isRequired,
         endpoint: React.PropTypes.string.isRequired,
         noiseFunction: React.PropTypes.string.isRequired
