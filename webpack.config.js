@@ -6,11 +6,13 @@ var BUILD_DIR = path.resolve(__dirname, "build");
 var APP_DIR = path.resolve(__dirname, "static/js");
 
 var config = {
-    entry: APP_DIR + "/index.jsx",
+    entry: {
+        main: APP_DIR + "/index.jsx"
+    },
     output: {
         path: BUILD_DIR,
         publicPath: "/static/",
-        filename: "bundle.js"
+        filename: "[name].js"
     },
     module: {
         loaders: [

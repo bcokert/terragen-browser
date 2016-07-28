@@ -4,7 +4,7 @@
   "description": "A web browser and interactive client for the Terragen service",
   "main": "index.jsx",
   "scripts": {
-    "dev": "webpack-dev-server --colors --port 1334",
+    "dev": "webpack-dev-server --debug --devtool eval-source-map --output-pathinfo --colors --port 1334",
     "build": "webpack -p"
   },
   "repository": {
