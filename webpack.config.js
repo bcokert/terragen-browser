@@ -19,7 +19,8 @@ var config = {
             {test: /\.jsx?/, include: APP_DIR, loader: "babel"},
             {test: /\.css$/, loader: "style-loader!css-loader"},
             {test: /\.less$/, loader: "style-loader!css-loader!less-loader"},
-            {test: /\.json$/, loader: "json"}
+            {test: /\.json$/, loader: "json"},
+            {test: /\.glsl/, loader: "raw"}
         ],
         noParse: [
             /plotly\.js/

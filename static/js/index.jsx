@@ -3,6 +3,7 @@ var React = require("react");
 var ReactDom = require("react-dom");
 var NoiseBrowserList = require("./components/noise-browser-list/noise-browser-list.jsx");
 var Button = require("./components/control/button/button.jsx");
+var WebGL = require("./components/webgl/webgl");
 
 require("./index.less");
 
@@ -55,7 +56,8 @@ class App extends React.Component {
                     <Button onClick={() => this.changePage("Spectral2D")}>Spectral Noise 2D</Button>
                 </div>
                 <div className="-column">
-                    <p className="-title">3D</p>
+                    <p className="-title">WebGl</p>
+                    <Button onClick={() => this.changePage("WebGLDemo")}>WebGL Demo</Button>
                 </div>
             </div>
         );
@@ -137,6 +139,10 @@ class App extends React.Component {
         );
     }
 
+    renderWebGLDemo() {
+        return <WebGL />;
+    }
+
     render () {
         let page;
         switch (this.state.page) {
@@ -148,6 +154,9 @@ class App extends React.Component {
                 break;
             case "Spectral2D":
                 page = this.renderSpectral2DList();
+                break;
+            case "WebGLDemo":
+                page = this.renderWebGLDemo();
                 break;
             default:
                 page = null;
