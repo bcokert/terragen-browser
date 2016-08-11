@@ -20,7 +20,8 @@ var config = {
             {test: /\.css$/, loader: "style-loader!css-loader"},
             {test: /\.less$/, loader: "style-loader!css-loader!less-loader"},
             {test: /\.json$/, loader: "json"},
-            {test: /\.glsl/, loader: "raw"}
+            {test: /\.glsl/, loader: "raw"},
+            {test: /\.(jpe?g|gif|png|svg)$/i, loader: "url?limit=10000"},
         ],
         noParse: [
             /plotly\.js/

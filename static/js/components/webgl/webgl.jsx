@@ -6,6 +6,7 @@ var SimpleFragmentShaderSource = require("../../shaders/simpleFragmentShader.gls
 var SimpleFragmentShaderUtils = require("../../shaders/simpleFragmentShaderUtils");
 var GLMatrix = require("gl-matrix");
 var Cube = require("../../gl-primitives/cube");
+var TextureLoader = require("../../texture/texture-loader");
 
 require("./webgl.less");
 
@@ -16,40 +17,45 @@ class WebGL extends React.Component {
         this._canvas = null; // ref to root canvas element
 
         this.state = {
-            initError: undefined
+            initError: undefined,
+            isLoadingTextures: false
         };
     }
 
     componentDidMount () {
         var gl = this.createGLContext(this._canvas);
+        this.setState({isLoadingTextures: true});
         if (gl) {
-            // Configure some gl globals
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            gl.enable(gl.DEPTH_TEST);
+            TextureLoader.loadTextures(gl).then(textures => {
+                this.setState({isLoadingTextures: false});
+                // Configure some gl globals
+                gl.clearColor(0.0, 0.0, 0.0, 1.0);
+                gl.enable(gl.DEPTH_TEST);
 
-            // Create program
-            var vertexShader = this.compileShader(gl, SimpleVertexShaderSource, gl.VERTEX_SHADER);
-            var fragmentShader = this.compileShader(gl, SimpleFragmentShaderSource, gl.FRAGMENT_SHADER);
-            var shaderProgram = this.createShaderProgram(gl, vertexShader, fragmentShader);
-            gl.useProgram(shaderProgram);
+                // Create program
+                var vertexShader = this.compileShader(gl, SimpleVertexShaderSource, gl.VERTEX_SHADER);
+                var fragmentShader = this.compileShader(gl, SimpleFragmentShaderSource, gl.FRAGMENT_SHADER);
+                var shaderProgram = this.createShaderProgram(gl, vertexShader, fragmentShader);
+                gl.useProgram(shaderProgram);
 
-            // Get the standard attributes and uniforms from the program
-            var vertexAtributesAndUniforms = SimpleVertexShaderUtils.getAttributesAndUniforms(gl, shaderProgram);
-            var fragmentUniforms = SimpleFragmentShaderUtils.getUniforms(gl, shaderProgram);
+                // Get the standard attributes and uniforms from the program
+                var vertexAtributesAndUniforms = SimpleVertexShaderUtils.getAttributesAndUniforms(gl, shaderProgram);
+                var fragmentUniforms = SimpleFragmentShaderUtils.getUniforms(gl, shaderProgram);
 
-            // Create the perspective matrix
-            var perspectiveMatrix = GLMatrix.mat4.create();
-            GLMatrix.mat4.perspective(perspectiveMatrix, 45, gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
+                // Create the perspective matrix
+                var perspectiveMatrix = GLMatrix.mat4.create();
+                GLMatrix.mat4.perspective(perspectiveMatrix, 45, gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
 
-            // Create the world modelView matrix
-            var modelViewMatrix = GLMatrix.mat4.create();
-            GLMatrix.mat4.identity(modelViewMatrix);
+                // Create the world modelView matrix
+                var modelViewMatrix = GLMatrix.mat4.create();
+                GLMatrix.mat4.identity(modelViewMatrix);
 
-            // Create test cubes
-            var cubes = [2,1,3].map((size, i) => new Cube(gl, size, [(i-1)*5, i-1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1)));
+                // Create test cubes
+                var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), textures.testWoodTexture));
 
-            // Render a single frame with the fake geometry
-            this.startRenderLoop(gl, perspectiveMatrix, modelViewMatrix, vertexAtributesAndUniforms, fragmentUniforms, cubes);
+                // Render a single frame with the fake geometry
+                this.startRenderLoop(gl, perspectiveMatrix, modelViewMatrix, vertexAtributesAndUniforms, fragmentUniforms, cubes);
+            });
         } else {
             this.setState({initError: "Unable to create context. The browser does not support WebGL."});
         }
@@ -172,7 +178,19 @@ class WebGL extends React.Component {
             return <p>{this.state.initError}</p>;
         }
 
-        return <canvas className="WebGL" ref={node => this._canvas = node}/>;
+        var notice = null;
+        if (this.state.initError) {
+            notice = <p>{this.state.initError}</p>;
+        }
+        if (this.state.isLoadingTextures) {
+            notice = <p>Please wait while we load textures</p>;
+        }
+        return (
+            <div className="WebGL">
+                {notice}
+                <canvas ref={node => this._canvas = node}/>
+            </div>
+        );
     }
 }
 

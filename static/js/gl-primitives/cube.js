@@ -9,8 +9,9 @@ class Cube {
      * @param {number} size
      * @param {number[]} position
      * @param {Float32Array} color
+     * @param {WebGLTexture|null} texture
      */
-    constructor (gl, size, position, color) {
+    constructor (gl, size, position, color, texture) {
         if (!gl || !gl.createBuffer) {
             throw new TypeError("Invalid rendering context provided to new Cube().");
         }
@@ -110,6 +111,11 @@ class Cube {
          */
         this.color = color;
 
+        /**
+         * @type {WebGLTexture|null}
+         */
+        this.texture = texture || null;
+
         // Fill the buffers with the initial position
         this.bufferData(gl);
     }
@@ -138,7 +144,7 @@ class Cube {
     render(gl, originMatrix, vertexPositionAttribute, modelViewMatrixUniform, inputColorUniform) {
         var modelViewMatrix = GLMatrix.mat4.clone(originMatrix);
         GLMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, this.position);
-        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation, [1,3,1]);
+        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation, [1, 3, 1]);
 
         gl.uniformMatrix4fv(modelViewMatrixUniform, false, modelViewMatrix);
 
