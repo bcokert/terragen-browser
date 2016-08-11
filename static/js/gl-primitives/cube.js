@@ -101,9 +101,9 @@ class Cube {
         this.position = position;
 
         /**
-         * @type {number} rotation The rotation around the z axis
+         * @type {number} rotation The rotation around the rotation axis
          */
-        this.zRotation = 1;
+        this.rotation = 0;
 
         /**
          * @type {Float32Array} The color of the whole primitive
@@ -138,7 +138,7 @@ class Cube {
     render(gl, originMatrix, vertexPositionAttribute, modelViewMatrixUniform, inputColorUniform) {
         var modelViewMatrix = GLMatrix.mat4.clone(originMatrix);
         GLMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, this.position);
-        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.zRotation, [1,1,1]);
+        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation, [1,3,1]);
 
         gl.uniformMatrix4fv(modelViewMatrixUniform, false, modelViewMatrix);
 
@@ -152,7 +152,7 @@ class Cube {
     }
 
     animate(dt) {
-        // this.zRotation += (Math.PI/2) * (dt/1000);
+        this.rotation += (Math.PI/2) * (dt/1000);
     }
 }
 
