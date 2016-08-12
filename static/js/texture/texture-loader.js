@@ -10,24 +10,36 @@ class TextureLoader  {
      */
     static loadTextures(gl) {
         return new Promise((resolve) => {
-            var textureUrls = [
-                require("../../img/textures/testWoodTexture.jpg")
-            ];
+            var textureSources = [{
+                url: require("../../img/textures/testWoodTexture.jpg"),
+                shouldFlipY: true
+            }];
 
             var loadedTextures = [];
 
-            var finishLoading = texture => {
+            var finishLoading = (texture, textureImage, textureSource) => {
+
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                if (textureSource.shouldFlipY) {
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+                }
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureImage);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.bindTexture(gl.TEXTURE_2D, null);
+
                 loadedTextures.push(texture);
-                if (loadedTextures.length === textureUrls.length) {
-                    setTimeout(() => resolve(loadedTextures), 5000);
+
+                if (loadedTextures.length === textureSources.length) {
+                    resolve(loadedTextures);
                 }
             };
 
-            textureUrls.forEach(textureUrl => {
+            textureSources.forEach(textureSource => {
                 var texture = gl.createTexture();
                 var textureImage = new Image();
-                textureImage.onload = () => finishLoading(texture);
-                textureImage.src = textureUrl;
+                textureImage.onload = () => finishLoading(texture, textureImage, textureSource);
+                textureImage.src = textureSource.url;
             });
         });
     }

@@ -114,7 +114,7 @@ class Cube {
         /**
          * @type {WebGLTexture|null}
          */
-        this.texture = texture || null;
+        this.texture = null;
 
         // Fill the buffers with the initial position
         this.bufferData(gl);
@@ -131,10 +131,14 @@ class Cube {
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indexArray, gl.STATIC_DRAW);
+
+        if (this.texture !== null && gl.isTexture(this.texture)) {
+        }
     }
 
     /**
      * Pushes data down to the given vertexPosition attribute and mvMatrix uniform, then tell the shader to render
+     * This function is meant to be called often.
      * @param {WebGLRenderingContext} gl
      * @param {Float32Array} originMatrix The origin mvMatrix that this primitive is relative to. Should be the identity if there is no parent.
      * @param {number} vertexPositionAttribute The index of the vertexPositionAttribute
