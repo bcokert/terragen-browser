@@ -2,29 +2,34 @@
 
 var Utils = {
     /**
-     * Grabs the attributes and uniforms of the vertex shader
+     * Grabs the attributes of the vertex shader
      * @param {WebGLRenderingContext} gl The gl rendering context
      * @param {WebGLProgram} shaderProgram The program to initialize with
-     * @return {{
-     *   attributes: object.<string, any>,
-     *   uniforms: object.<string, any>
-     * }}
+     * @return {Object.<string, number>}
      */
-    getAttributesAndUniforms: (gl, shaderProgram) => {
+    getAttributes: (gl, shaderProgram) => {
         var vertexPosition = gl.getAttribLocation(shaderProgram, "vertexPosition");
-        gl.enableVertexAttribArray(shaderProgram.inputVertex);
+        gl.enableVertexAttribArray(vertexPosition);
 
-        var perspectiveMatrix = gl.getUniformLocation(shaderProgram, "perspectiveMatrix");
-        var modelViewMatrix = gl.getUniformLocation(shaderProgram, "modelViewMatrix");
+        var textureCoordinate = gl.getAttribLocation(shaderProgram, "textureCoordinate");
+        gl.enableVertexAttribArray(textureCoordinate);
 
         return {
-            attributes: {
-                vertexPosition: vertexPosition
-            },
-            uniforms: {
-                perspectiveMatrix: perspectiveMatrix,
-                modelViewMatrix: modelViewMatrix
-            }
+            vertexPosition: vertexPosition,
+            textureCoordinate: textureCoordinate
+        };
+    },
+
+    /**
+     * Grabs the uniforms of the vertex shader
+     * @param {WebGLRenderingContext} gl The gl rendering context
+     * @param {WebGLProgram} shaderProgram The program to initialize with
+     * @return {Object.<string, number>}
+     */
+    getUniforms: (gl, shaderProgram) => {
+        return {
+            perspectiveMatrix: gl.getUniformLocation(shaderProgram, "perspectiveMatrix"),
+            modelViewMatrix: gl.getUniformLocation(shaderProgram, "modelViewMatrix")
         };
     }
 };

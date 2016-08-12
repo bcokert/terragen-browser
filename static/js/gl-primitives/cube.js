@@ -102,9 +102,13 @@ class Cube {
         this.position = position;
 
         /**
-         * @type {number} rotation The rotation around the rotation axis
+         * @type {{x: number,y: number,z: number}} rotation The rotation around each axis
          */
-        this.rotation = 0;
+        this.rotation = {
+            x: 0,
+            y: 0,
+            z: 0,
+        };
 
         /**
          * @type {Float32Array} The color of the whole primitive
@@ -114,7 +118,62 @@ class Cube {
         /**
          * @type {WebGLTexture|null}
          */
-        this.texture = null;
+        this.texture = texture || null;
+
+        /**
+         * @type {WebGLBuffer|null}
+         */
+        this.textureCoordinateBuffer = null;
+
+        /**
+         * @type {Float32Array|null}
+         */
+        this.textureCoordinateArray = null;
+
+        /**
+         * @type {number} textureCoordinateSize The number of items per texture coordinate in the textureCoordinateArray
+         */
+        this.textureCoordinateSize = 2;
+
+        this.textureCoordinateBuffer = gl.createBuffer();
+
+        this.textureCoordinateArray = new Float32Array([
+            //front
+            0, 1,
+            1, 1,
+            0, 0,
+            1, 0,
+
+            //right
+            1, 0,
+            1, 1,
+            0, 0,
+            0, 1,
+
+            // left
+            1, 0,
+            1, 1,
+            0, 0,
+            0, 1,
+
+            //back
+            1, 1,
+            0, 1,
+            1, 0,
+            0, 0,
+
+            //top
+            1, 0,
+            0, 0,
+            1, 1,
+            0, 1,
+
+            //bottom
+            1, 0,
+            0, 0,
+            1, 1,
+            0, 1,
+        ]);
 
         // Fill the buffers with the initial position
         this.bufferData(gl);
@@ -132,8 +191,8 @@ class Cube {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indexArray, gl.STATIC_DRAW);
 
-        if (this.texture !== null && gl.isTexture(this.texture)) {
-        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinateBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this.textureCoordinateArray, gl.STATIC_DRAW);
     }
 
     /**
@@ -141,28 +200,42 @@ class Cube {
      * This function is meant to be called often.
      * @param {WebGLRenderingContext} gl
      * @param {Float32Array} originMatrix The origin mvMatrix that this primitive is relative to. Should be the identity if there is no parent.
-     * @param {number} vertexPositionAttribute The index of the vertexPositionAttribute
-     * @param {number} modelViewMatrixUniform The index of the modelViewMatrixUniform
-     * @param {number} inputColorUniform The index of the inputColorUniform
+     * @param {Object.<string, number>} vertexAttributes
+     * @param {Object.<string, number>} vertexUniforms
+     * @param {Object.<string, number>} fragmentUniforms
      */
-    render(gl, originMatrix, vertexPositionAttribute, modelViewMatrixUniform, inputColorUniform) {
+    render(gl, originMatrix, vertexAttributes, vertexUniforms, fragmentUniforms) {
         var modelViewMatrix = GLMatrix.mat4.clone(originMatrix);
         GLMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, this.position);
-        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation, [1, 3, 1]);
+        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation.x, [1, 0, 0]);
+        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation.y, [0, 1, 0]);
+        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation.z, [0, 0, 1]);
 
-        gl.uniformMatrix4fv(modelViewMatrixUniform, false, modelViewMatrix);
+        gl.uniformMatrix4fv(vertexUniforms.modelViewMatrix, false, modelViewMatrix);
+        gl.uniform4fv(fragmentUniforms.inputColor, this.color);
 
-        gl.uniform4fv(inputColorUniform, this.color);
+        if (gl.isTexture(this.texture)) {
+            gl.uniform1i(fragmentUniforms.sampler, 0);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        }
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinateBuffer);
+        gl.vertexAttribPointer(vertexAttributes.textureCoordinate, this.textureCoordinateSize, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.vertexAttribPointer(vertexPositionAttribute, this.vertexSize, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(vertexAttributes.vertexPosition, this.vertexSize, gl.FLOAT, false, 0, 0);
+
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
         gl.drawElements(gl.TRIANGLES, this.indexArray.length, gl.UNSIGNED_SHORT, 0);
     }
 
     animate(dt) {
-        this.rotation += (Math.PI/2) * (dt/1000);
+        this.rotation.x += this.color[0]*(Math.PI/2) * (dt/1000);
+        this.rotation.y += this.color[0]*(Math.PI/2) * (dt/1000);
+        this.rotation.z += this.color[0]*(Math.PI/2) * (dt/1000);
     }
 }
 

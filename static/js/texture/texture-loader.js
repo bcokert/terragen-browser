@@ -11,11 +11,12 @@ class TextureLoader  {
     static loadTextures(gl) {
         return new Promise((resolve) => {
             var textureSources = [{
+                name: "testWoodTexture",
                 url: require("../../img/textures/testWoodTexture.jpg"),
                 shouldFlipY: true
             }];
 
-            var loadedTextures = [];
+            var loadedTextures = {};
 
             var finishLoading = (texture, textureImage, textureSource) => {
 
@@ -28,9 +29,9 @@ class TextureLoader  {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 gl.bindTexture(gl.TEXTURE_2D, null);
 
-                loadedTextures.push(texture);
+                loadedTextures[textureSource.name] = texture;
 
-                if (loadedTextures.length === textureSources.length) {
+                if (Object.keys(loadedTextures).length === textureSources.length) {
                     resolve(loadedTextures);
                 }
             };

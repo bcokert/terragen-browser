@@ -10,6 +10,7 @@ var Utils = {
     getUniforms: (gl, shaderProgram) => {
         return {
             inputColor: gl.getUniformLocation(shaderProgram, "inputColor"),
+            sampler: gl.getUniformLocation(shaderProgram, "sampler")
         };
     }
 };

@@ -39,7 +39,8 @@ class WebGL extends React.Component {
                 gl.useProgram(shaderProgram);
 
                 // Get the standard attributes and uniforms from the program
-                var vertexAtributesAndUniforms = SimpleVertexShaderUtils.getAttributesAndUniforms(gl, shaderProgram);
+                var vertexAttributes = SimpleVertexShaderUtils.getAttributes(gl, shaderProgram);
+                var vertexUniforms = SimpleVertexShaderUtils.getUniforms(gl, shaderProgram);
                 var fragmentUniforms = SimpleFragmentShaderUtils.getUniforms(gl, shaderProgram);
 
                 // Create the perspective matrix
@@ -51,10 +52,10 @@ class WebGL extends React.Component {
                 GLMatrix.mat4.identity(modelViewMatrix);
 
                 // Create test cubes
-                var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), textures.testWoodTexture));
+                var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), textures["testWoodTexture"]));
 
                 // Render a single frame with the fake geometry
-                this.startRenderLoop(gl, perspectiveMatrix, modelViewMatrix, vertexAtributesAndUniforms, fragmentUniforms, cubes);
+                this.startRenderLoop(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
             });
         } else {
             this.setState({initError: "Unable to create context. The browser does not support WebGL."});
@@ -136,7 +137,7 @@ class WebGL extends React.Component {
         return shaderProgram;
     }
 
-    startRenderLoop(gl, perspectiveMatrix, modelViewMatrix, vertexAtributesAndUniforms, fragmentUniforms, cubes) {
+    startRenderLoop(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
 
         var render = () => {
             if (gl.canvas.width !== gl.canvas.clientWidth || gl.canvas.height !== gl.canvas.clientHeight) {
@@ -148,10 +149,10 @@ class WebGL extends React.Component {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             // Push the perspective matrix
-            gl.uniformMatrix4fv(vertexAtributesAndUniforms.uniforms.perspectiveMatrix, false, perspectiveMatrix);
+            gl.uniformMatrix4fv(vertexUniforms.perspectiveMatrix, false, perspectiveMatrix);
 
             // Render the cubes
-            cubes.forEach(cube => cube.render(gl, modelViewMatrix, vertexAtributesAndUniforms.attributes.vertexPosition, vertexAtributesAndUniforms.uniforms.modelViewMatrix, fragmentUniforms.inputColor));
+            cubes.forEach(cube => cube.render(gl, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms));
         };
 
         var animate = dt => {
