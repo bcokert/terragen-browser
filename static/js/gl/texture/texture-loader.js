@@ -12,7 +12,7 @@ class TextureLoader  {
         return new Promise((resolve) => {
             var textureSources = [{
                 name: "testWoodTexture",
-                url: require("../../img/textures/testWoodTexture.jpg"),
+                url: require("../../../img/textures/testWoodTexture.jpg"),
                 shouldFlipY: true
             }];
 

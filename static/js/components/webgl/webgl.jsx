@@ -1,12 +1,12 @@
 "use strict";
 var React = require("react");
-var SimpleVertexShaderSource = require("../../shaders/simpleVertexShader.glsl");
-var SimpleVertexShaderUtils = require("../../shaders/simpleVertexShaderUtils");
-var SimpleFragmentShaderSource = require("../../shaders/simpleFragmentShader.glsl");
-var SimpleFragmentShaderUtils = require("../../shaders/simpleFragmentShaderUtils");
+var SimpleVertexShaderSource = require("../../gl/shaders/simpleVertexShader.glsl");
+var SimpleVertexShaderUtils = require("../../gl/shaders/simpleVertexShaderUtils");
+var SimpleFragmentShaderSource = require("../../gl/shaders/simpleFragmentShader.glsl");
+var SimpleFragmentShaderUtils = require("../../gl/shaders/simpleFragmentShaderUtils");
 var GLMatrix = require("gl-matrix");
-var Cube = require("../../gl-primitives/cube");
-var TextureLoader = require("../../texture/texture-loader");
+var Cube = require("../../gl/primitives/cube");
+var TextureLoader = require("../../gl/texture/texture-loader");
 
 require("./webgl.less");
 
