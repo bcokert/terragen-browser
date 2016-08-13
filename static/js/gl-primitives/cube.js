@@ -200,9 +200,9 @@ class Cube {
      * This function is meant to be called often.
      * @param {WebGLRenderingContext} gl
      * @param {Float32Array} originMatrix The origin mvMatrix that this primitive is relative to. Should be the identity if there is no parent.
-     * @param {Object.<string, number>} vertexAttributes
-     * @param {Object.<string, number>} vertexUniforms
-     * @param {Object.<string, number>} fragmentUniforms
+     * @param {Object.<string, int>} vertexAttributes
+     * @param {Object.<string, WebGLUniformLocation>} vertexUniforms
+     * @param {Object.<string, WebGLUniformLocation>} fragmentUniforms
      */
     render(gl, originMatrix, vertexAttributes, vertexUniforms, fragmentUniforms) {
         var modelViewMatrix = GLMatrix.mat4.clone(originMatrix);

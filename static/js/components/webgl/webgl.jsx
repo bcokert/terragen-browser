@@ -17,6 +17,7 @@ class WebGL extends React.Component {
         this._canvas = null; // ref to root canvas element
 
         this.state = {
+            frameRate: 0,
             initError: undefined,
             isLoadingTextures: false
         };
@@ -54,8 +55,8 @@ class WebGL extends React.Component {
                 // Create test cubes
                 var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), textures["testWoodTexture"]));
 
-                // Render a single frame with the fake geometry
-                this.startRenderLoop(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
+                // Start the system, which starts the render loop and logic loop
+                this.start(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
             });
         } else {
             this.setState({initError: "Unable to create context. The browser does not support WebGL."});
@@ -137,41 +138,97 @@ class WebGL extends React.Component {
         return shaderProgram;
     }
 
-    startRenderLoop(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
+    /**
+     * Takes an initialized rendering context and all the uniforms, attributes, and objects it needs, then
+     * kicks off the renderLoop and logicLoop
+     * @param {WebGLRenderingContext} gl
+     * @param {Float32Array} perspectiveMatrix
+     * @param {Float32Array} modelViewMatrix
+     * @param {Object.<string, int>} vertexAttributes
+     * @param {Object.<string, WebGLUniformLocation>} vertexUniforms
+     * @param {Object.<string, WebGLUniformLocation>} fragmentUniforms
+     * @param {Cube[]} cubes
+     */
+    start(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
+        var renderLoop = this.renderLoopFactory(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
+        var logicLoop = this.logicLoopFactory(cubes);
 
-        var render = () => {
+        renderLoop();
+        logicLoop();
+    }
+
+    /**
+     * Creates a renderLoop from the rendering context and everything required to render
+     * The resulting render loop will run as fast as the underlying hardware will allow
+     * @param {WebGLRenderingContext} gl
+     * @param {Float32Array} perspectiveMatrix
+     * @param {Float32Array} modelViewMatrix
+     * @param {Object.<string, int>} vertexAttributes
+     * @param {Object.<string, WebGLUniformLocation>} vertexUniforms
+     * @param {Object.<string, WebGLUniformLocation>} fragmentUniforms
+     * @param {Cube[]} cubes
+     * @returns {function} The function to call to start the render loop
+     */
+    renderLoopFactory(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
+        var lastRenderTime = 0;
+        var msPerFrame = 0;
+        var now = 0;
+        var renderLoop = () => {
+            requestAnimationFrame(renderLoop);
+
+            // Update the frame rate
+            now = Date.now();
+            msPerFrame = now - lastRenderTime;
+            lastRenderTime = now;
+
+            // Update the viewport config if it has changed
             if (gl.canvas.width !== gl.canvas.clientWidth || gl.canvas.height !== gl.canvas.clientHeight) {
                 gl.canvas.width = gl.canvas.clientWidth;
                 gl.canvas.height = gl.canvas.clientHeight;
             }
 
+            // Reset the viewport to the new config, and clear the render buffer
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             // Push the perspective matrix
             gl.uniformMatrix4fv(vertexUniforms.perspectiveMatrix, false, perspectiveMatrix);
 
-            // Render the cubes
+            // Render the objects
             cubes.forEach(cube => cube.render(gl, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms));
         };
 
-        var animate = dt => {
-            cubes.forEach(cube => cube.animate(dt));
+        return () => {
+            lastRenderTime = Date.now();
+            setInterval(() => this.setState({frameRate: parseInt(1 / (msPerFrame / 1000), 10)}), 5000);
+            renderLoop();
         };
+    }
 
+    /**
+     * Creates a logicLoop for the current scene
+     * The resulting logicLoop runs at a constant rate, unless the cpu is actually overloaded (which is rare since webGL will prefer to drop render calls instead)
+     * It will pass in the delta time to all children to handle this case
+     * @param {Cube[]} cubes
+     * @returns {function} The function call to start the logic loop
+     */
+    logicLoopFactory(cubes) {
+        var now = 0;
         var lastTime = 0;
-        var renderLoop = () => {
-            requestAnimationFrame(renderLoop);
-            render();
-            var now = Date.now();
-            if (lastTime === 0) {
-                lastTime = Date.now();
-            }
-            animate(now - lastTime);
+        var delta = 0;
+
+        var logicFunction = () => {
+            now = Date.now();
+            delta = now - lastTime;
             lastTime = now;
+
+            cubes.forEach(cube => cube.animate(delta));
         };
 
-        renderLoop();
+        return () => {
+            lastTime = Date.now();
+            setInterval(logicFunction, 1000/60);
+        };
     }
 
     render () {
@@ -189,7 +246,8 @@ class WebGL extends React.Component {
         return (
             <div className="WebGL">
                 {notice}
-                <canvas ref={node => this._canvas = node}/>
+                <div className="-frameRateDisplay">Frame Rate (±3): {this.state.frameRate}</div>
+                <canvas key="renderCanvas" ref={node => this._canvas = node}/>
             </div>
         );
     }
