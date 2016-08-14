@@ -10,8 +10,9 @@ class Cube {
      * @param {number[]} position
      * @param {Float32Array} color
      * @param {WebGLTexture|null} texture
+     * @param {InputManager} inputManager
      */
-    constructor (gl, size, position, color, texture) {
+    constructor (gl, size, position, color, texture, inputManager) {
         if (!gl || !gl.createBuffer) {
             throw new TypeError("Invalid rendering context provided to new Cube().");
         }
@@ -97,18 +98,39 @@ class Cube {
         ]);
 
         /**
-         * @type {number[]} position The position of this object relative to its origin (from its parent)
+         * @type {Float32Array} position The position of this object relative to its origin (from its parent)
          */
-        this.position = position;
+        this.position = new Float32Array(position);
 
         /**
-         * @type {{x: number,y: number,z: number}} rotation The rotation around each axis
+         * @type {Float32Array} A vec3 describing the acceleration of this primitive, per second
          */
-        this.rotation = {
-            x: 0,
-            y: 0,
-            z: 0,
-        };
+        this.acceleration = GLMatrix.vec3.create([0, 0, 0]);
+
+        /**
+         * @type {number} The maximum acceleration per second
+         */
+        this.maxAcceleration = 3;
+
+        /**
+         * @type {Float32Array} A vec3 describing the speed of this primitive, per second
+         */
+        this.speed = GLMatrix.vec3.create([0, 0, 0]);
+
+        /**
+         * @type {number} The maximum speed per second
+         */
+        this.maxSpeed = 6;
+
+        /**
+         * @type {Float32Array} rotation The rotation around each axis
+         */
+        this.rotation = new Float32Array([0, 0, 0]);
+
+        /**
+         * @type {Float32Array} A vec3 describing the rotation around each axis
+         */
+        this.rotationSpeed = new Float32Array([Math.random(), Math.random(), Math.random()]);
 
         /**
          * @type {Float32Array} The color of the whole primitive
@@ -177,6 +199,8 @@ class Cube {
 
         // Fill the buffers with the initial position
         this.bufferData(gl);
+
+        this.registerInputs(inputManager);
     }
 
     /**
@@ -207,9 +231,9 @@ class Cube {
     render(gl, originMatrix, vertexAttributes, vertexUniforms, fragmentUniforms) {
         var modelViewMatrix = GLMatrix.mat4.clone(originMatrix);
         GLMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, this.position);
-        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation.x, [1, 0, 0]);
-        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation.y, [0, 1, 0]);
-        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation.z, [0, 0, 1]);
+        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation[0], [1, 0, 0]);
+        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation[1], [0, 1, 0]);
+        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation[2], [0, 0, 1]);
 
         gl.uniformMatrix4fv(vertexUniforms.modelViewMatrix, false, modelViewMatrix);
         gl.uniform4fv(fragmentUniforms.inputColor, this.color);
@@ -232,10 +256,56 @@ class Cube {
         gl.drawElements(gl.TRIANGLES, this.indexArray.length, gl.UNSIGNED_SHORT, 0);
     }
 
-    animate(dt) {
-        this.rotation.x += this.color[0]*(Math.PI/2) * (dt/1000);
-        this.rotation.y += this.color[0]*(Math.PI/2) * (dt/1000);
-        this.rotation.z += this.color[0]*(Math.PI/2) * (dt/1000);
+    update(dt) {
+        var fracSecond = dt / 1000;
+
+        this.rotation[0] += this.rotationSpeed[0]*(Math.PI/2) * fracSecond;
+        this.rotation[1] += this.rotationSpeed[0]*(Math.PI/2) * fracSecond;
+        this.rotation[2] += this.rotationSpeed[0]*(Math.PI/2) * fracSecond;
+
+        this.speed[0] += this.acceleration[0] * fracSecond;
+        if (this.speed[0] > this.maxSpeed) {
+            this.speed[0] = this.maxSpeed;
+        } else if (this.speed[0] < -this.maxSpeed) {
+            this.speed[0] = -this.maxSpeed;
+        }
+
+        this.speed[1] += this.acceleration[1] * fracSecond;
+        if (this.speed[1] > this.maxSpeed) {
+            this.speed[1] = this.maxSpeed;
+        } else if (this.speed[1] < -this.maxSpeed) {
+            this.speed[1] = -this.maxSpeed;
+        }
+
+        this.position[0] += this.speed[0] * fracSecond;
+        this.position[1] += this.speed[1] * fracSecond;
+    }
+
+    /**
+     * Registers the appropriate input actions for this primitive
+     * @param {InputManager} inputManager
+     */
+    registerInputs(inputManager) {
+        var handleInput = inputState => {
+            this.acceleration[0] = (inputState[inputManager.KEY_TO_CODE["A"]] ? -this.maxAcceleration : 0) + (inputState[inputManager.KEY_TO_CODE["D"]] ? this.maxAcceleration : 0);
+            this.acceleration[1] = (inputState[inputManager.KEY_TO_CODE["S"]] ? -this.maxAcceleration : 0) + (inputState[inputManager.KEY_TO_CODE["W"]] ? this.maxAcceleration : 0);
+
+            if (inputState[inputManager.KEY_TO_CODE[" "]]) {
+                this.rotationSpeed[0] = Math.random();
+                this.rotationSpeed[1] = Math.random();
+                this.rotationSpeed[2] = Math.random();
+            }
+
+            if (inputState[inputManager.KEY_TO_CODE["shift"]]) {
+                this.acceleration[0] = 0;
+                this.acceleration[1] = 0;
+                this.speed[0] = 0;
+                this.speed[1] = 0;
+            }
+        };
+
+        inputManager.on("keydown", handleInput);
+        inputManager.on("keyup", handleInput);
     }
 }
 

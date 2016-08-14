@@ -7,6 +7,7 @@ var SimpleFragmentShaderUtils = require("../../gl/shaders/simpleFragmentShaderUt
 var GLMatrix = require("gl-matrix");
 var Cube = require("../../gl/primitives/cube");
 var TextureLoader = require("../../gl/texture/texture-loader");
+var InputManager = require("../../gl/input/input-manager");
 
 require("./webgl.less");
 
@@ -52,8 +53,24 @@ class WebGL extends React.Component {
                 var modelViewMatrix = GLMatrix.mat4.create();
                 GLMatrix.mat4.identity(modelViewMatrix);
 
+                // Create global input manager
+                var inputManager = new InputManager();
+
+                // Add some inputs for the modelView matrix
+                var handleCameraInput = inputState => {
+                    if (inputState[inputManager.KEY_TO_CODE["Q"]]) {
+                        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, -0.3, [0, 1, 0]);
+                    }
+                    if (inputState[inputManager.KEY_TO_CODE["E"]]) {
+                        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.3, [0, 1, 0]);
+                    }
+                };
+
+                inputManager.on("keydown", handleCameraInput);
+                inputManager.on("keyup", handleCameraInput);
+
                 // Create test cubes
-                var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), textures["testWoodTexture"]));
+                var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), textures["testWoodTexture"], inputManager));
 
                 // Start the system, which starts the render loop and logic loop
                 this.start(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
@@ -222,7 +239,7 @@ class WebGL extends React.Component {
             delta = now - lastTime;
             lastTime = now;
 
-            cubes.forEach(cube => cube.animate(delta));
+            cubes.forEach(cube => cube.update(delta));
         };
 
         return () => {
