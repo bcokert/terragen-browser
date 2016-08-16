@@ -28,6 +28,7 @@ var Utils = {
      */
     getUniforms: (gl, shaderProgram) => {
         return {
+            cameraRotationMatrix: gl.getUniformLocation(shaderProgram, "cameraRotationMatrix"),
             perspectiveMatrix: gl.getUniformLocation(shaderProgram, "perspectiveMatrix"),
             modelViewMatrix: gl.getUniformLocation(shaderProgram, "modelViewMatrix")
         };

@@ -53,27 +53,42 @@ class WebGL extends React.Component {
                 var modelViewMatrix = GLMatrix.mat4.create();
                 GLMatrix.mat4.identity(modelViewMatrix);
 
+                // Create the camera rotation matrix
+                var cameraRotationMatrix = GLMatrix.mat4.create();
+                GLMatrix.mat4.identity(modelViewMatrix);
+
                 // Create global input manager
                 var inputManager = new InputManager();
 
-                // Add some inputs for the modelView matrix
-                var handleCameraInput = inputState => {
-                    if (inputState[inputManager.KEY_TO_CODE["Q"]]) {
-                        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, -0.3, [0, 1, 0]);
-                    }
-                    if (inputState[inputManager.KEY_TO_CODE["E"]]) {
-                        GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.3, [0, 1, 0]);
-                    }
-                };
+                // Add some event handlers for the mouse, to modify the rotation matrix
+                var isMouseDragging = false;
+                var mouseDragStartCoords = null;
+                inputManager.on("mousedown", (inputState, coords) => {
+                    isMouseDragging = true;
+                    mouseDragStartCoords = coords;
+                });
 
-                inputManager.on("keydown", handleCameraInput);
-                inputManager.on("keyup", handleCameraInput);
+                inputManager.on("mouseup", () => {
+                    isMouseDragging = false;
+                    mouseDragStartCoords = null;
+                });
+
+                inputManager.on("mousemove", (inputState, coords) => {
+                    if (isMouseDragging && mouseDragStartCoords) {
+                        var dx = mouseDragStartCoords.x - coords.x;
+                        var dy = mouseDragStartCoords.y - coords.y;
+                        GLMatrix.mat4.rotate(cameraRotationMatrix, cameraRotationMatrix, dx/300, [0, 1, 0]);
+                        GLMatrix.mat4.rotate(cameraRotationMatrix, cameraRotationMatrix, dy/300, [1, 0, 0]);
+                        mouseDragStartCoords.x = coords.x;
+                        mouseDragStartCoords.y = coords.y;
+                    }
+                });
 
                 // Create test cubes
                 var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), textures["testWoodTexture"], inputManager));
 
                 // Start the system, which starts the render loop and logic loop
-                this.start(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
+                this.start(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
             });
         } else {
             this.setState({initError: "Unable to create context. The browser does not support WebGL."});
@@ -161,13 +176,14 @@ class WebGL extends React.Component {
      * @param {WebGLRenderingContext} gl
      * @param {Float32Array} perspectiveMatrix
      * @param {Float32Array} modelViewMatrix
+     * @param {Float32Array} cameraRotationMatrix
      * @param {Object.<string, int>} vertexAttributes
      * @param {Object.<string, WebGLUniformLocation>} vertexUniforms
      * @param {Object.<string, WebGLUniformLocation>} fragmentUniforms
      * @param {Cube[]} cubes
      */
-    start(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
-        var renderLoop = this.renderLoopFactory(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
+    start(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
+        var renderLoop = this.renderLoopFactory(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
         var logicLoop = this.logicLoopFactory(cubes);
 
         renderLoop();
@@ -180,13 +196,14 @@ class WebGL extends React.Component {
      * @param {WebGLRenderingContext} gl
      * @param {Float32Array} perspectiveMatrix
      * @param {Float32Array} modelViewMatrix
+     * @param {Float32Array} cameraRotationMatrix
      * @param {Object.<string, int>} vertexAttributes
      * @param {Object.<string, WebGLUniformLocation>} vertexUniforms
      * @param {Object.<string, WebGLUniformLocation>} fragmentUniforms
      * @param {Cube[]} cubes
      * @returns {function} The function to call to start the render loop
      */
-    renderLoopFactory(gl, perspectiveMatrix, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
+    renderLoopFactory(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
         var lastRenderTime = 0;
         var msPerFrame = 0;
         var now = 0;
@@ -210,6 +227,9 @@ class WebGL extends React.Component {
 
             // Push the perspective matrix
             gl.uniformMatrix4fv(vertexUniforms.perspectiveMatrix, false, perspectiveMatrix);
+
+            // Push the camera rotation matrix
+            gl.uniformMatrix4fv(vertexUniforms.cameraRotationMatrix, false, cameraRotationMatrix);
 
             // Render the objects
             cubes.forEach(cube => cube.render(gl, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms));

@@ -23,6 +23,21 @@ class InputManager {
             this.emit("keyup", e.keyCode);
         });
 
+        window.addEventListener("mousedown", e => {
+            this.KEY_TO_CODE["mousedown"] = Date.now();
+            this.emit("mousedown", {x: e.clientX, y: e.clientY});
+        });
+
+        window.addEventListener("mousemove", e => {
+            this.KEY_TO_CODE["mousemove"] = Date.now();
+            this.emit("mousemove", {x: e.clientX, y: e.clientY});
+        });
+
+        window.addEventListener("mouseup", e => {
+            this.KEY_TO_CODE["mouseup"] = Date.now();
+            this.emit("mouseup", {x: e.clientX, y: e.clientY});
+        });
+
         this.KEY_TO_CODE = InputManager.KEY_TO_CODE;
     }
 
