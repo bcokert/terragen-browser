@@ -5,21 +5,50 @@
     "node": true,
     "es6": true
   },
-
-  "plugins": ["react"],
-
+  "parserOptions": {
+    "ecmaFeatures": {
+      "arrowFunctions": true,
+      "binaryLiterals": true,
+      "blockBindings": true,
+      "classes": true,
+      "defaultParams": true,
+      "destructuring": true,
+      "forOf": true,
+      "generators": true,
+      "modules": true,
+      "objectLiteralComputedProperties": true,
+      "objectLiteralDuplicateProperties": true,
+      "objectLiteralShorthandMethods": true,
+      "objectLiteralShorthandProperties": true,
+      "octalLiterals": true,
+      "regexUFlag": true,
+      "regexYFlag": true,
+      "spread": true,
+      "superInFunctions": false,
+      "templateStrings": true,
+      "unicodeCodePointEscapes": true,
+      "globalReturn": true,
+      "jsx": true
+    }
+  },
+  "plugins": [
+    "react"
+  ],
   "settings": {
     "react": {
       "pragma": "React",
       "version": "15.0"
     }
   },
-
   "rules": {
     "camelcase": "error",
     "curly": "error",
     "eol-last": "error",
-    "quotes": ["error", "double", "avoid-escape"],
+    "quotes": [
+      "error",
+      "double",
+      "avoid-escape"
+    ],
     "semi": "error",
     "no-alert": "error",
     "no-underscore-dangle": "error",
@@ -30,7 +59,7 @@
     "react/jsx-sort-props": "error",
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",
-    "react/no-did-mount-set-state": "error",
+    "react/no-did-mount-set-state": "off",
     "react/no-did-update-set-state": "error",
     "react/no-multi-comp": "error",
     "react/no-string-refs": "error",
@@ -41,6 +70,15 @@
     "react/sort-prop-types": "error",
     "react/wrap-multilines": "error",
     "strict": "error",
-    "valid-jsdoc": ["error", {"prefer": {"return": "returns"}, "requireParamDescription": false, "requireReturnDescription": false}]
+    "valid-jsdoc": [
+      "error",
+      {
+        "prefer": {
+          "return": "returns"
+        },
+        "requireParamDescription": false,
+        "requireReturnDescription": false
+      }
+    ]
   }
 }
