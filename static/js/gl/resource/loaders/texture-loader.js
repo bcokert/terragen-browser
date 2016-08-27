@@ -1,27 +1,12 @@
 "use strict";
 
-class TextureLoader  {
-
-    /**
-     * Starts the loading of all textures, returning a promise who's resolver will pass in a map from texture
-     * name to gl texture objects.
-     * @param {WebGLRenderingContext} gl
-     * @return {Promise} that resolves with Object.<string, WebGLTexture>
-     */
-    static loadTextures(gl) {
+const TextureLoaderProto = {
+    loadResources(gl, resources) {
         return new Promise((resolve) => {
-            var textureSources = [{
-                name: "testWoodTexture",
-                url: require("../../../img/textures/testWoodTexture.jpg"),
-                shouldFlipY: true
-            }];
-
             var loadedTextures = {};
-
             var finishLoading = (texture, textureImage, textureSource) => {
-
                 gl.bindTexture(gl.TEXTURE_2D, texture);
-                if (textureSource.shouldFlipY) {
+                if (textureSource.invertY) {
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
                 }
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureImage);
@@ -31,12 +16,12 @@ class TextureLoader  {
 
                 loadedTextures[textureSource.name] = texture;
 
-                if (Object.keys(loadedTextures).length === textureSources.length) {
+                if (Object.keys(loadedTextures).length === resources.length) {
                     resolve(loadedTextures);
                 }
             };
 
-            textureSources.forEach(textureSource => {
+            resources.forEach(textureSource => {
                 var texture = gl.createTexture();
                 var textureImage = new Image();
                 textureImage.onload = () => finishLoading(texture, textureImage, textureSource);
@@ -44,6 +29,17 @@ class TextureLoader  {
             });
         });
     }
-}
+};
+
+/**
+ * A TextureLoader loads the given images, and creates gl textures from them
+ * @returns {TextureLoader}
+ * @constructor
+ */
+const TextureLoader = () => {
+    return Object.assign(Object.create(TextureLoaderProto), {});
+};
+
+TextureLoader.prototype = TextureLoaderProto;
 
 module.exports = TextureLoader;
