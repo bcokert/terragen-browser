@@ -6,16 +6,18 @@ var SimpleFragmentShaderSource = require("../../gl/shaders/simpleFragmentShader.
 var SimpleFragmentShaderUtils = require("../../gl/shaders/simpleFragmentShaderUtils");
 var GLMatrix = require("gl-matrix");
 var Cube = require("../../gl/primitives/cube");
-var TextureLoader = require("../../gl/texture/texture-loader");
+var ResourceLoader = require("../../gl/resource/resource-loader");
 var InputManager = require("../../gl/input/input-manager");
+var ProgramManager = require("../../gl/program/program-manager");
+var ProgramCompiler = require("../../gl/program/program-compiler");
 
 require("./webgl.less");
 
 class WebGL extends React.Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
 
-        this._canvas = null; // ref to root canvas element
+        this.canvas = null; // ref to root canvas element
 
         this.state = {
             frameRate: 0,
@@ -24,20 +26,25 @@ class WebGL extends React.Component {
         };
     }
 
-    componentDidMount () {
-        var gl = this.createGLContext(this._canvas);
+    componentDidMount() {
+        var gl = this.createGLContext(this.canvas);
         this.setState({isLoadingTextures: true});
         if (gl) {
-            TextureLoader.loadTextures(gl).then(textures => {
+            const resourceLoader = ResourceLoader();
+            resourceLoader.loadResources(gl).then(resources => {
                 this.setState({isLoadingTextures: false});
                 // Configure some gl globals
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.enable(gl.DEPTH_TEST);
 
                 // Create program
-                var vertexShader = this.compileShader(gl, SimpleVertexShaderSource, gl.VERTEX_SHADER);
-                var fragmentShader = this.compileShader(gl, SimpleFragmentShaderSource, gl.FRAGMENT_SHADER);
-                var shaderProgram = this.createShaderProgram(gl, vertexShader, fragmentShader);
+                var programManager = ProgramManager(gl, {
+                    simple: {
+                        vertexShader: SimpleVertexShaderSource,
+                        fragmentShader: SimpleFragmentShaderSource
+                    }
+                }, ProgramCompiler());
+                var shaderProgram = programManager.getProgram("simple");
                 gl.useProgram(shaderProgram);
 
                 // Get the standard attributes and uniforms from the program
@@ -58,7 +65,7 @@ class WebGL extends React.Component {
                 GLMatrix.mat4.identity(modelViewMatrix);
 
                 // Create global input manager
-                var inputManager = new InputManager();
+                var inputManager = InputManager();
 
                 // Add some event handlers for the mouse, to modify the rotation matrix
                 var isMouseDragging = false;
@@ -85,7 +92,7 @@ class WebGL extends React.Component {
                 });
 
                 // Create test cubes
-                var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), textures["testWoodTexture"], inputManager));
+                var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), resources.textures["testWoodTexture"], inputManager));
 
                 // Start the system, which starts the render loop and logic loop
                 this.start(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
@@ -100,74 +107,13 @@ class WebGL extends React.Component {
      * @param {HTMLElement} canvas
      * @returns {WebGLRenderingContext}
      */
-    createGLContext (canvas) {
+    createGLContext(canvas) {
         var gl;
         try {
             gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-        } catch (e) {
-        }
+        } catch (e) {}
 
         return gl ? gl : undefined;
-    }
-
-    /**
-     * Takes the source of a glsl shader and compiles it, returning the resulting WebGLShader, or an Error if it fails
-     * @param {WebGLRenderingContext} gl The gl rendering context to compile with
-     * @param {string} shaderSource The source of the shader, typically acquired via require('../path/to/shader.xx')
-     * @param {number} shaderType The shader type, either gl.FRAGMENT_SHADER or gl.VERTEX_SHADER.
-     * @throws {TypeError}
-     * @returns {WebGLShader|Error}
-     */
-    compileShader(gl, shaderSource, shaderType) {
-        if (typeof shaderSource !== "string" || shaderSource === "") {
-            throw new TypeError("Invalid shaderSource provided to compileShader.");
-        }
-        if (shaderType !== gl.VERTEX_SHADER && shaderType !== gl.FRAGMENT_SHADER) {
-            throw new TypeError("Invalid shaderType provided to compileShader.");
-        }
-        if (!gl || !gl.createShader) {
-            throw new TypeError("Invalid rendering context provided to compileShader.");
-        }
-
-        var shader = gl.createShader(shaderType);
-        gl.shaderSource(shader, shaderSource);
-        gl.compileShader(shader);
-
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            return new Error("Unable to compile shader: " + gl.getShaderInfoLog(shader));
-        }
-
-        return shader;
-    }
-
-    /**
-     * Combines compiled shaders into a WebGLProgram and returns it, or an Error if it fails
-     * @param {WebGLRenderingContext} gl The gl rendering context to compile with
-     * @param {WebGLShader} vertexShader The compiled vertex shader, eg that from compileShader()
-     * @param {WebGLShader} fragmentShader The compiled fragment shader, eg that from compileShader()
-     * @returns {WebGLProgram|Error}
-     */
-    createShaderProgram(gl, vertexShader, fragmentShader) {
-        if (!gl || !gl.createProgram) {
-            throw new TypeError("Invalid rendering context provided to createShaderProgram.");
-        }
-        if (!gl.isShader(vertexShader)) {
-            throw new TypeError("Invalid vertexShader provided to createShaderProgram.");
-        }
-        if (!gl.isShader(fragmentShader)) {
-            throw new TypeError("Invalid fragmentShader provided to createShaderProgram.");
-        }
-
-        var shaderProgram = gl.createProgram();
-        gl.attachShader(shaderProgram, vertexShader);
-        gl.attachShader(shaderProgram, fragmentShader);
-        gl.linkProgram(shaderProgram);
-
-        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-            return new Error("Unable to create shader program: " + gl.getProgramInfoLog(shaderProgram));
-        }
-
-        return shaderProgram;
     }
 
     /**
@@ -181,6 +127,7 @@ class WebGL extends React.Component {
      * @param {Object.<string, WebGLUniformLocation>} vertexUniforms
      * @param {Object.<string, WebGLUniformLocation>} fragmentUniforms
      * @param {Cube[]} cubes
+     * @returns {undefined}
      */
     start(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
         var renderLoop = this.renderLoopFactory(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
@@ -268,7 +215,7 @@ class WebGL extends React.Component {
         };
     }
 
-    render () {
+    render() {
         if (this.state.initError) {
             return <p>{this.state.initError}</p>;
         }
@@ -284,7 +231,7 @@ class WebGL extends React.Component {
             <div className="WebGL">
                 {notice}
                 <div className="-frameRateDisplay">Frame Rate (±3): {this.state.frameRate}</div>
-                <canvas key="renderCanvas" ref={node => this._canvas = node}/>
+                <canvas key="renderCanvas" ref={node => this.canvas = node}/>
             </div>
         );
     }

@@ -9,7 +9,7 @@ var _ = require("underscore");
 require("./noise-browser.less");
 
 class NoiseBrowser extends React.Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -40,12 +40,12 @@ class NoiseBrowser extends React.Component {
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
     }
 
-    componentDidMount () {
+    componentDidMount() {
         Plotly.plot(this._plotArea, [this.getPlot()], this.getLayout(), this.getConfig());
         this.fetchNoise();
     }
 
-    componentDidUpdate (previousProps, previousState) {
+    componentDidUpdate(previousProps, previousState) {
         if (
             previousState.from !== this.state.from
             || previousState.to !== this.state.to
@@ -66,7 +66,7 @@ class NoiseBrowser extends React.Component {
         }
     }
 
-    getLayout () {
+    getLayout() {
         switch(this.props.dimension) {
             case 1:
                 return {
@@ -78,14 +78,14 @@ class NoiseBrowser extends React.Component {
                 return {
                     margin: {l: 0, r: 0, t: 0, b: 0},
                     height: 700,
-                    width: this._plotArea.offsetWidth,
+                    width: this._plotArea.offsetWidth
                 };
             default:
                 throw new Error("Unsupported dimension for noise browser, in getLayout");
         }
     }
 
-    getConfig () {
+    getConfig() {
         switch(this.props.dimension) {
             case 1:
                 return {
@@ -103,7 +103,7 @@ class NoiseBrowser extends React.Component {
         }
     }
 
-    getPlot () {
+    getPlot() {
         switch(this.props.dimension) {
             case 1:
                 return {
@@ -123,7 +123,7 @@ class NoiseBrowser extends React.Component {
         }
     }
 
-    fetchNoise () {
+    fetchNoise() {
         Ajax.request({
             url: this.props.endpoint,
             method: "GET",
@@ -152,23 +152,23 @@ class NoiseBrowser extends React.Component {
         });
     }
 
-    renderErrors () {
+    renderErrors() {
         return this.state.errors.map(e => <span className="-error x-value">{e}</span>);
     }
 
-    onChangeFrom (newFrom) {
+    onChangeFrom(newFrom) {
         this.setState({from: newFrom});
     }
 
-    onChangeTo (newTo) {
+    onChangeTo(newTo) {
         this.setState({to: newTo});
     }
 
-    onChangeResolution (newResolution) {
+    onChangeResolution(newResolution) {
         this.setState({resolution: newResolution});
     }
 
-    render () {
+    render() {
         return (
             <div className="NoiseBrowser">
                 <div className="-title">

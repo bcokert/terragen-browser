@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "webpack-dev-server --debug --devtool eval-source-map --output-pathinfo --colors --port 1334",
     "build": "webpack -p",
-    "lint": "eslint ."
+    "lint": "eslint . --fix --ext .js,.jsx"
   },
   "config": {
     "pre-git": {

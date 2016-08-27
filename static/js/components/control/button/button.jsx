@@ -6,11 +6,11 @@ var classNames = require("classnames");
 require("./button.less");
 
 class Button extends React.Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
     }
 
-    render () {
+    render() {
         const classes = classNames("Button", this.props.className, {});
 
         return (

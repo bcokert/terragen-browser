@@ -7,7 +7,7 @@ class Ajax {
      * @param params object An object of query params. Will be properly formatted
      * @return string
      */
-    static addParams (baseUrl, params) {
+    static addParams(baseUrl, params) {
         if (Object.keys(params).length === 0) {
             return baseUrl;
         }
@@ -36,7 +36,7 @@ class Ajax {
      * @param {?Object} options.jsonData - An object containing arbitrary json data to post or put
      * @returns {Promise}
      */
-    static request (options = {}) {
+    static request(options = {}) {
         options = Object.assign(Ajax.defaultRequestOptions, options);
 
         let url = options.url;

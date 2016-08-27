@@ -12,7 +12,7 @@ class Cube {
      * @param {WebGLTexture|null} texture
      * @param {InputManager} inputManager
      */
-    constructor (gl, size, position, color, texture, inputManager) {
+    constructor(gl, size, position, color, texture, inputManager) {
         if (!gl || !gl.createBuffer) {
             throw new TypeError("Invalid rendering context provided to new Cube().");
         }
@@ -77,7 +77,7 @@ class Cube {
             1, -1, -1,
             -1, -1, -1,
             1, -1, 1,
-            -1, -1, 1,
+            -1, -1, 1
         ]);
 
         /**
@@ -94,7 +94,7 @@ class Cube {
             8, 9, 10, 9, 10, 11, //left
             12, 13, 14, 13, 14, 15, //back
             16, 17, 18, 17, 18, 19, //top
-            20, 21, 22, 21, 22, 23, //bottom
+            20, 21, 22, 21, 22, 23 //bottom
         ]);
 
         /**
@@ -194,7 +194,7 @@ class Cube {
             1, 0,
             0, 0,
             1, 1,
-            0, 1,
+            0, 1
         ]);
 
         // Fill the buffers with the initial position

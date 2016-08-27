@@ -7,7 +7,7 @@ var classNames = require("classnames");
 require("./text-field.less");
 
 class TextField extends React.Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -20,7 +20,7 @@ class TextField extends React.Component {
         this.onChange = this.onChange.bind(this);
     }
 
-    componentWillReceiveProps (newProps) {
+    componentWillReceiveProps(newProps) {
         if (newProps.value !== this.state.value) {
             this.setState({
                 isValid: this.props.validate(newProps.value),
@@ -29,11 +29,11 @@ class TextField extends React.Component {
         }
     }
 
-    componentDidMount () {
+    componentDidMount() {
         this._onChangeDebounced = _.debounce(this.props.onChange, this.props.debounceTimeout);
     }
 
-    onChange (e) {
+    onChange(e) {
         const newValue = e.target.value;
         this.setState({
             isValid: this.props.validate(newValue),
@@ -42,7 +42,7 @@ class TextField extends React.Component {
         this._onChangeDebounced(newValue);
     }
 
-    render () {
+    render() {
         let additionalProps = {};
         if (this.props.readOnly) {
             additionalProps.readOnly = true;

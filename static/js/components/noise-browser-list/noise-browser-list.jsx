@@ -7,15 +7,15 @@ var TextField = require("../control/text-field/text-field.jsx");
 require("./noise-browser-list.less");
 
 class NoiseBrowserList extends React.Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
     }
 
-    renderNoiseBrowsers () {
+    renderNoiseBrowsers() {
         return this.props.browserList.map((browserData, i) => <NoiseBrowser dimension={browserData.dimension} displayName={browserData.displayName} endpoint={browserData.endpoint} initialNoiseFunction={browserData.noiseFunction} key={"NoiseBrowser1D_" + i}/>);
     }
 
-    render () {
+    render() {
         return (
             <div className="NoiseBrowserList">
                 <div className="-header">
