@@ -8,7 +8,7 @@ var WebGL = require("./components/webgl/webgl");
 require("./index.less");
 
 class App extends React.Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -20,16 +20,16 @@ class App extends React.Component {
         this.onPageRefresh = this.onPageRefresh.bind(this);
     }
 
-    componentDidMount () {
+    componentDidMount() {
         window.addEventListener("popstate", this.onPageReload);
         window.onload = this.onPageRefresh;
     }
 
-    onPageRefresh () {
+    onPageRefresh() {
         this.setState({page: history.state && history.state.page ? history.state.page : "Main"});
     }
 
-    onPageReload (e) {
+    onPageReload(e) {
         if (!e || typeof e !== "object" || !e.state) {
             this.setState({page: "Main"});
         } else {
@@ -37,14 +37,14 @@ class App extends React.Component {
         }
     }
 
-    changePage (newPage) {
+    changePage(newPage) {
         history.pushState({page: newPage}, newPage, "/");
         this.setState({
             page: newPage
         });
     }
 
-    renderMainPage () {
+    renderMainPage() {
         return (
             <div className="-mainPage">
                 <div className="-column">
@@ -63,7 +63,7 @@ class App extends React.Component {
         );
     }
 
-    renderSpectral1DList () {
+    renderSpectral1DList() {
         return (
             <NoiseBrowserList
                 browserList={[{
@@ -101,7 +101,7 @@ class App extends React.Component {
         );
     }
 
-    renderSpectral2DList () {
+    renderSpectral2DList() {
         return (
             <NoiseBrowserList
                 browserList={[{
@@ -143,7 +143,7 @@ class App extends React.Component {
         return <WebGL />;
     }
 
-    render () {
+    render() {
         let page;
         switch (this.state.page) {
             case "Main":
