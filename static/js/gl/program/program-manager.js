@@ -7,7 +7,7 @@ const ProgramManagerProto = {
      * @param {string} programName - The name of the program as in the original shaderSources map
      * @returns {WebGLProgram|Error}
      */
-    getProgram (programName) {
+    getProgram(programName) {
         if (this.cache[programName] === undefined) {
             this.addProgramToCache(programName);
         }
@@ -19,7 +19,7 @@ const ProgramManagerProto = {
      * @param {string} programName - The name of the program as in the original shaderSources map
      * @returns {undefined}
      */
-    addProgramToCache (programName) {
+    addProgramToCache(programName) {
         const vertexShaderSource = this.shaderSources[programName].vertexShader;
         const fragmentShaderSource = this.shaderSources[programName].fragmentShader;
 
