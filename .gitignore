@@ -7,3 +7,4 @@ build/
 
 # Ignore dev files
 node_modules
+npm-debug.log

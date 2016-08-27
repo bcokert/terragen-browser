@@ -8,6 +8,13 @@
     "build": "webpack -p",
     "lint": "eslint ."
   },
+  "config": {
+    "pre-git": {
+      "pre-commit": [
+        "npm run lint"
+      ]
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bcokert/terragen-browser.git"
@@ -41,6 +48,7 @@
     "json-loader": "^0.5.4",
     "less": "^2.7.1",
     "less-loader": "^2.2.3",
+    "pre-git": "^3.10.0",
     "raw-loader": "^0.5.1",
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",

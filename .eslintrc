@@ -41,15 +41,18 @@
     }
   },
   "rules": {
+    "brace-style": ["error", "1tbs", {"allowSingleLine": true}],
     "camelcase": "error",
     "curly": "error",
     "eol-last": "error",
+    "no-spaced-func": "error",
     "quotes": [
       "error",
       "double",
       "avoid-escape"
     ],
     "semi": "error",
+    "space-before-function-paren": ["error", "never"],
     "no-alert": "error",
     "no-underscore-dangle": "error",
     "react/display-name": "error",
