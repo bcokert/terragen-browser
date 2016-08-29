@@ -1,5 +1,14 @@
 "use strict";
 
+/**
+ * ProgramInfo encapsulates all the uniforms and attributes, as well as their types.
+ * The info for XYZTypeShader.glsl should be provided in a file called XYZTypeShaderInfo.js
+ * This file should find locations and do any initialization required.
+ * @typedef {Object} ProgramInfo
+ * @property {Object.<string, {set: function, location: int}>} uniforms
+ * @property {Object.<string, {set: function, location: int, disable: function}>} attributes
+ */
+
 const ProgramManagerProto = {
     /**
      * Retrieves a program from the cache, or tries to build it.
@@ -32,14 +41,19 @@ const ProgramManagerProto = {
 
         const vertexShader = this.programCompiler.compileShader(this.gl, vertexShaderSource, this.gl.VERTEX_SHADER);
         const fragmentShader = this.programCompiler.compileShader(this.gl, fragmentShaderSource, this.gl.FRAGMENT_SHADER);
-        this.cache[programName] = this.programCompiler.createShaderProgram(this.gl, vertexShader, fragmentShader);
+        const program = this.programCompiler.createShaderProgram(this.gl, vertexShader, fragmentShader);
+
+        this.cache[programName] = {
+            program: program,
+            programInfo: this.shaderSources[programName].programInfo(this.gl, program)
+        };
     }
 };
 
 /**
  * Creates a new ProgramManager, which caches compiled programs and handles compiling new ones on request
  * @param {WebGLRenderingContext} gl
- * @param {object.<string, {vertexShader: string, fragmentShader: string}>} shaderSources - The map from program to shader source code
+ * @param {object.<string, {vertexShader: string, fragmentShader: string, programInfo: function}>} shaderSources - The map from program to shader source code and programInfo builders
  * @param {ProgramCompiler} programCompiler - The compiler for programs that are not already cached
  * @returns {ProgramManager}
  * @constructor
@@ -47,7 +61,7 @@ const ProgramManagerProto = {
 const ProgramManager = (gl, shaderSources, programCompiler) => {
     return Object.assign(Object.create(ProgramManagerProto), {
         /**
-         * @type {object.<string, WebGLProgram>}
+         * @type {object.<string, {program: WebGLProgram, programInfo: ProgramInfo}>}
          */
         cache: {},
         gl: gl,

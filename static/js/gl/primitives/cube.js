@@ -207,6 +207,7 @@ class Cube {
      * Pushes the vertex and index arrays into the vertex and index buffers
      * Should be called after modifying the arrays
      * @param {WebGLRenderingContext} gl
+     * @returns {undefined}
      */
     bufferData(gl) {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
@@ -223,35 +224,25 @@ class Cube {
      * Pushes data down to the given vertexPosition attribute and mvMatrix uniform, then tell the shader to render
      * This function is meant to be called often.
      * @param {WebGLRenderingContext} gl
+     * @param {ProgramInfo} programInfo - The program info for the in use program
      * @param {Float32Array} originMatrix The origin mvMatrix that this primitive is relative to. Should be the identity if there is no parent.
-     * @param {Object.<string, int>} vertexAttributes
-     * @param {Object.<string, WebGLUniformLocation>} vertexUniforms
-     * @param {Object.<string, WebGLUniformLocation>} fragmentUniforms
+     * @returns {undefined}
      */
-    render(gl, originMatrix, vertexAttributes, vertexUniforms, fragmentUniforms) {
+    render(gl, programInfo, originMatrix) {
         var modelViewMatrix = GLMatrix.mat4.clone(originMatrix);
         GLMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, this.position);
         GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation[0], [1, 0, 0]);
         GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation[1], [0, 1, 0]);
         GLMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, this.rotation[2], [0, 0, 1]);
 
-        gl.uniformMatrix4fv(vertexUniforms.modelViewMatrix, false, modelViewMatrix);
-        gl.uniform4fv(fragmentUniforms.inputColor, this.color);
-
+        programInfo.uniforms.modelViewMatrix.set(modelViewMatrix);
+        programInfo.uniforms.inputColor.set(this.color);
         if (gl.isTexture(this.texture)) {
-            gl.uniform1i(fragmentUniforms.sampler, 0);
-
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            programInfo.uniforms.texture1.set(this.texture);
         }
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinateBuffer);
-        gl.vertexAttribPointer(vertexAttributes.textureCoordinate, this.textureCoordinateSize, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.vertexAttribPointer(vertexAttributes.vertexPosition, this.vertexSize, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+        programInfo.attributes.textureCoordinate.set(this.textureCoordinateBuffer);
+        programInfo.attributes.vertexPosition.set(this.vertexBuffer);
 
         gl.drawElements(gl.TRIANGLES, this.indexArray.length, gl.UNSIGNED_SHORT, 0);
     }
@@ -284,6 +275,7 @@ class Cube {
     /**
      * Registers the appropriate input actions for this primitive
      * @param {InputManager} inputManager
+     * @returns {undefined}
      */
     registerInputs(inputManager) {
         var handleInput = inputState => {

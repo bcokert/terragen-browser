@@ -1,9 +1,8 @@
 "use strict";
 var React = require("react");
 var SimpleVertexShaderSource = require("../../gl/shaders/simpleVertexShader.glsl");
-var SimpleVertexShaderUtils = require("../../gl/shaders/simpleVertexShaderUtils");
 var SimpleFragmentShaderSource = require("../../gl/shaders/simpleFragmentShader.glsl");
-var SimpleFragmentShaderUtils = require("../../gl/shaders/simpleFragmentShaderUtils");
+var SimpleShaderInfo = require("../../gl/shaders/simpleShaderInfo");
 var GLMatrix = require("gl-matrix");
 var Cube = require("../../gl/primitives/cube");
 var ResourceLoader = require("../../gl/resource/resource-loader");
@@ -37,20 +36,14 @@ class WebGL extends React.Component {
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.enable(gl.DEPTH_TEST);
 
-                // Create program
+                // Create the program manager
                 var programManager = ProgramManager(gl, {
                     simple: {
                         vertexShader: SimpleVertexShaderSource,
-                        fragmentShader: SimpleFragmentShaderSource
+                        fragmentShader: SimpleFragmentShaderSource,
+                        programInfo: SimpleShaderInfo
                     }
                 }, ProgramCompiler());
-                var shaderProgram = programManager.getProgram("simple");
-                gl.useProgram(shaderProgram);
-
-                // Get the standard attributes and uniforms from the program
-                var vertexAttributes = SimpleVertexShaderUtils.getAttributes(gl, shaderProgram);
-                var vertexUniforms = SimpleVertexShaderUtils.getUniforms(gl, shaderProgram);
-                var fragmentUniforms = SimpleFragmentShaderUtils.getUniforms(gl, shaderProgram);
 
                 // Create the perspective matrix
                 var perspectiveMatrix = GLMatrix.mat4.create();
@@ -95,7 +88,7 @@ class WebGL extends React.Component {
                 var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), resources.textures["testWoodTexture"], inputManager));
 
                 // Start the system, which starts the render loop and logic loop
-                this.start(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
+                this.start(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes);
             });
         } else {
             this.setState({initError: "Unable to create context. The browser does not support WebGL."});
@@ -120,17 +113,15 @@ class WebGL extends React.Component {
      * Takes an initialized rendering context and all the uniforms, attributes, and objects it needs, then
      * kicks off the renderLoop and logicLoop
      * @param {WebGLRenderingContext} gl
+     * @param {ProgramManager} programManager
      * @param {Float32Array} perspectiveMatrix
      * @param {Float32Array} modelViewMatrix
      * @param {Float32Array} cameraRotationMatrix
-     * @param {Object.<string, int>} vertexAttributes
-     * @param {Object.<string, WebGLUniformLocation>} vertexUniforms
-     * @param {Object.<string, WebGLUniformLocation>} fragmentUniforms
      * @param {Cube[]} cubes
      * @returns {undefined}
      */
-    start(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
-        var renderLoop = this.renderLoopFactory(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes);
+    start(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes) {
+        var renderLoop = this.renderLoopFactory(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes);
         var logicLoop = this.logicLoopFactory(cubes);
 
         renderLoop();
@@ -141,16 +132,14 @@ class WebGL extends React.Component {
      * Creates a renderLoop from the rendering context and everything required to render
      * The resulting render loop will run as fast as the underlying hardware will allow
      * @param {WebGLRenderingContext} gl
+     * @param {ProgramManager} programManager
      * @param {Float32Array} perspectiveMatrix
      * @param {Float32Array} modelViewMatrix
      * @param {Float32Array} cameraRotationMatrix
-     * @param {Object.<string, int>} vertexAttributes
-     * @param {Object.<string, WebGLUniformLocation>} vertexUniforms
-     * @param {Object.<string, WebGLUniformLocation>} fragmentUniforms
      * @param {Cube[]} cubes
      * @returns {function} The function to call to start the render loop
      */
-    renderLoopFactory(gl, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, vertexAttributes, vertexUniforms, fragmentUniforms, cubes) {
+    renderLoopFactory(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes) {
         var lastRenderTime = 0;
         var msPerFrame = 0;
         var now = 0;
@@ -172,14 +161,19 @@ class WebGL extends React.Component {
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+            // Get the main program
+            const mainProgram = programManager.getProgram("simple");
+            gl.useProgram(mainProgram.program);
+            const programInfo = mainProgram.programInfo;
+
             // Push the perspective matrix
-            gl.uniformMatrix4fv(vertexUniforms.perspectiveMatrix, false, perspectiveMatrix);
+            programInfo.uniforms.perspectiveMatrix.set(perspectiveMatrix);
 
             // Push the camera rotation matrix
-            gl.uniformMatrix4fv(vertexUniforms.cameraRotationMatrix, false, cameraRotationMatrix);
+            programInfo.uniforms.cameraRotationMatrix.set(cameraRotationMatrix);
 
             // Render the objects
-            cubes.forEach(cube => cube.render(gl, modelViewMatrix, vertexAttributes, vertexUniforms, fragmentUniforms));
+            cubes.forEach(cube => cube.render(gl, programInfo, modelViewMatrix));
         };
 
         return () => {
