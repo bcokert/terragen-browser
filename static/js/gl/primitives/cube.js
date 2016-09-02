@@ -81,11 +81,6 @@ class Cube {
         ]);
 
         /**
-         * @type {number} vertexSize The number of items per vertex in the vertexArray
-         */
-        this.vertexSize = 3;
-
-        /**
          * @type {Uint16Array}
          */
         this.indexArray = new Uint16Array([
@@ -151,11 +146,6 @@ class Cube {
          * @type {Float32Array|null}
          */
         this.textureCoordinateArray = null;
-
-        /**
-         * @type {number} textureCoordinateSize The number of items per texture coordinate in the textureCoordinateArray
-         */
-        this.textureCoordinateSize = 2;
 
         this.textureCoordinateBuffer = gl.createBuffer();
 
