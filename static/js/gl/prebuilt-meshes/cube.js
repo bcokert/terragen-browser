@@ -38,7 +38,7 @@ module.exports = {
         1, -1, 1,
         -1, -1, 1
     ]),
-    indexArray: new Float32Array([
+    indexArray: new Uint16Array([
         0, 1, 2, 1, 2, 3, //front
         4, 5, 6, 5, 6, 7, //right
         8, 9, 10, 9, 10, 11, //left

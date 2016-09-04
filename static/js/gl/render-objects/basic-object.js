@@ -9,7 +9,7 @@ const Colorable = require("./render-components/colorable");
 
 const CubeMesh = require("../prebuilt-meshes/cube");
 
-const BasicObjectProto = Object.assign(Rotatable.prototype, Positionable.prototype, {
+const BasicObjectProto = Object.assign(Object.create({}), Rotatable.prototype, Positionable.prototype, Meshable.prototype, Texturable.prototype, Colorable.prototype, {
     render(gl, programInfo, modelViewMatrix) {
         this.renderQueue.forEach(renderStep => {
             modelViewMatrix = renderStep(gl, programInfo, modelViewMatrix);
@@ -33,16 +33,24 @@ const BasicObjectProto = Object.assign(Rotatable.prototype, Positionable.prototy
  * @constructor
  */
 const BasicObject = (gl, position, color, texture) => {
-    return Object.assign(
+    const instance = Object.assign(
         Object.create(BasicObjectProto),
         Rotatable(GLMatrix.vec3.create()),
         Positionable(position),
         Meshable(gl, CubeMesh.vertexArray, CubeMesh.indexArray),
         Texturable(gl, CubeMesh.uvArray, texture),
-        Colorable(color), {
-            renderQueue: [Rotatable.prototype.render, Positionable.prototype.render, Meshable.prototype.render, Texturable.prototype.render, Colorable.prototype.render]
-        }
+        Colorable(color)
     );
+
+    instance.renderQueue = [
+        Rotatable.prototype.render.bind(instance),
+        Positionable.prototype.render.bind(instance),
+        Meshable.prototype.render.bind(instance),
+        Texturable.prototype.render.bind(instance),
+        Colorable.prototype.render.bind(instance)
+    ];
+
+    return instance;
 };
 
 BasicObject.prototype = BasicObjectProto;

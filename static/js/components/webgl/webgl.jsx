@@ -4,11 +4,11 @@ var SimpleVertexShaderSource = require("../../gl/shaders/simpleVertexShader.glsl
 var SimpleFragmentShaderSource = require("../../gl/shaders/simpleFragmentShader.glsl");
 var SimpleShaderInfo = require("../../gl/shaders/simpleShaderInfo");
 var GLMatrix = require("gl-matrix");
-var Cube = require("../../gl/primitives/cube");
 var ResourceLoader = require("../../gl/resource/resource-loader");
 var InputManager = require("../../gl/input/input-manager");
 var ProgramManager = require("../../gl/program/program-manager");
 var ProgramCompiler = require("../../gl/program/program-compiler");
+var BasicObject = require("../../gl/render-objects/basic-object");
 
 require("./webgl.less");
 
@@ -51,11 +51,9 @@ class WebGL extends React.Component {
 
                 // Create the world modelView matrix
                 var modelViewMatrix = GLMatrix.mat4.create();
-                GLMatrix.mat4.identity(modelViewMatrix);
 
                 // Create the camera rotation matrix
                 var cameraRotationMatrix = GLMatrix.mat4.create();
-                GLMatrix.mat4.identity(modelViewMatrix);
 
                 // Create global input manager
                 var inputManager = InputManager();
@@ -85,7 +83,8 @@ class WebGL extends React.Component {
                 });
 
                 // Create test cubes
-                var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), resources.textures["testWoodTexture"], inputManager));
+                // var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), resources.textures["testWoodTexture"], inputManager));
+                var cubes = [2, 1, 3].map((size, i) => BasicObject(gl, new Float32Array([(i - 1) * 5, i - 1, -8]), GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), resources.textures["testWoodTexture"]));
 
                 // Start the system, which starts the render loop and logic loop
                 this.start(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes);
@@ -122,10 +121,10 @@ class WebGL extends React.Component {
      */
     start(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes) {
         var renderLoop = this.renderLoopFactory(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes);
-        var logicLoop = this.logicLoopFactory(cubes);
+        // var logicLoop = this.logicLoopFactory(cubes);
 
         renderLoop();
-        logicLoop();
+        // logicLoop();
     }
 
     /**
@@ -173,7 +172,7 @@ class WebGL extends React.Component {
             programInfo.uniforms.cameraRotationMatrix.set(cameraRotationMatrix);
 
             // Render the objects
-            cubes.forEach(cube => cube.render(gl, programInfo, modelViewMatrix));
+            cubes.forEach(cube => cube.render(gl, programInfo, GLMatrix.mat4.clone(modelViewMatrix)));
         };
 
         return () => {

@@ -6,7 +6,7 @@ const MeshableProto = {
      * @param {WebGLRenderingContext} gl
      * @returns {undefined}
      */
-    updateArrayBuffer(gl) {
+    updateVertexBuffer(gl) {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, this.vertexArray, gl.STATIC_DRAW);
     },
@@ -36,7 +36,7 @@ const MeshableProto = {
  * Adds the ability for an object to have a renderable triangle mesh.
  * @param {WebGLRenderingContext} gl
  * @param {Float32Array} vertexArray - an array containing triples of floats, each representing a vertex
- * @param {Float32Array} indexArray - an array containing triples of indexes, each pointing to 3 vertices that make up a triangle
+ * @param {Uint16Array} indexArray - an array containing triples of indexes, each pointing to 3 vertices that make up a triangle
  * @constructor
  * @returns {Meshable}
  */
@@ -44,7 +44,7 @@ const Meshable = (gl, vertexArray, indexArray) => {
     if (Object.prototype.toString.call(vertexArray) !== "[object Float32Array]") {
         throw new TypeError("Invalid vertexArray provided to Meshable factory.");
     }
-    if (Object.prototype.toString.call(indexArray) !== "[object Float32Array]") {
+    if (Object.prototype.toString.call(indexArray) !== "[object Uint16Array]") {
         throw new TypeError("Invalid indexArray provided to Meshable factory.");
     }
 
@@ -55,7 +55,7 @@ const Meshable = (gl, vertexArray, indexArray) => {
         indexBuffer: gl.createBuffer()
     });
 
-    instance.updateArrayBuffer(gl);
+    instance.updateVertexBuffer(gl);
     instance.updateIndexBuffer(gl);
 
     return instance;

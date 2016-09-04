@@ -10,15 +10,15 @@ const RotatableProto = {
      */
     rotate(rotation) {
         if (rotation[0]) {
-            GLMatrix.quat.rotateX(this.rotation, this.rotation, rotation[0]);
+            GLMatrix.quat.rotateX(this.quaternion, this.quaternion, rotation[0]);
         }
         if (rotation[1]) {
-            GLMatrix.quat.rotateY(this.rotation, this.rotation, rotation[1]);
+            GLMatrix.quat.rotateY(this.quaternion, this.quaternion, rotation[1]);
         }
         if (rotation[2]) {
-            GLMatrix.quat.rotateZ(this.rotation, this.rotation, rotation[2]);
+            GLMatrix.quat.rotateZ(this.quaternion, this.quaternion, rotation[2]);
         }
-        GLMatrix.mat4.fromQuat(this.rotationMatrix, this.rotation);
+        GLMatrix.mat4.fromQuat(this.rotationMatrix, this.quaternion);
     },
 
     render(gl, programInfo, modelViewMatrix) {
@@ -45,6 +45,8 @@ const Rotatable = (rotation) => {
         rotationMatrix: GLMatrix.mat4.create()
     });
     instance.rotate(rotation);
+
+    return instance;
 };
 
 Rotatable.prototype = RotatableProto;
