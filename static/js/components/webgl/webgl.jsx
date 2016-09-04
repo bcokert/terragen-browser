@@ -73,18 +73,25 @@ class WebGL extends React.Component {
 
                 inputManager.on("mousemove", (inputState, coords) => {
                     if (isMouseDragging && mouseDragStartCoords) {
-                        var dx = mouseDragStartCoords.x - coords.x;
-                        var dy = mouseDragStartCoords.y - coords.y;
-                        GLMatrix.mat4.rotate(cameraRotationMatrix, cameraRotationMatrix, dx/300, [0, 1, 0]);
-                        GLMatrix.mat4.rotate(cameraRotationMatrix, cameraRotationMatrix, dy/300, [1, 0, 0]);
-                        mouseDragStartCoords.x = coords.x;
-                        mouseDragStartCoords.y = coords.y;
+                        if (!inputState[InputManager.KEY_TO_CODE["shift"]]) {
+                            var dx = mouseDragStartCoords.x - coords.x;
+                            var dy = mouseDragStartCoords.y - coords.y;
+                            GLMatrix.mat4.rotate(cameraRotationMatrix, cameraRotationMatrix, dx / 300, [0, 1, 0]);
+                            GLMatrix.mat4.rotate(cameraRotationMatrix, cameraRotationMatrix, dy / 300, [1, 0, 0]);
+                            mouseDragStartCoords.x = coords.x;
+                            mouseDragStartCoords.y = coords.y;
+                        }
                     }
                 });
 
                 // Create test cubes
-                // var cubes = [2, 1, 3].map((size, i) => new Cube(gl, size, [(i - 1) * 5, i - 1, -8], GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), resources.textures["testWoodTexture"], inputManager));
-                var cubes = [2, 1, 3].map((size, i) => BasicObject(gl, new Float32Array([(i - 1) * 5, i - 1, -8]), GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1), resources.textures["testWoodTexture"]));
+                var cubes = [1, 1, 1].map((size, i) => (BasicObject(
+                    gl,
+                    new Float32Array([(i - 1) * 5, i - 1, -8]),
+                    GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1),
+                    resources.textures["testWoodTexture"],
+                    inputManager
+                )));
 
                 // Start the system, which starts the render loop and logic loop
                 this.start(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes);
@@ -121,10 +128,10 @@ class WebGL extends React.Component {
      */
     start(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes) {
         var renderLoop = this.renderLoopFactory(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes);
-        // var logicLoop = this.logicLoopFactory(cubes);
+        var logicLoop = this.logicLoopFactory(cubes);
 
         renderLoop();
-        // logicLoop();
+        logicLoop();
     }
 
     /**
@@ -196,7 +203,7 @@ class WebGL extends React.Component {
 
         var logicFunction = () => {
             now = Date.now();
-            delta = now - lastTime;
+            delta = (now - lastTime)/1000;
             lastTime = now;
 
             cubes.forEach(cube => cube.update(delta));

@@ -5,7 +5,7 @@ const GLMatrix = require("gl-matrix");
 const RotatableProto = {
     /**
      * Rotates the object about each of the x y z axis given the angle around each. Pass in zero or null to skip an axis.
-     * @param {Float32Array} rotation - Rotation around x, y, z axis in radians
+     * @param {number[]} rotation - Rotation around x, y, z axis in radians
      * @returns {undefined}
      */
     rotate(rotation) {
@@ -22,7 +22,7 @@ const RotatableProto = {
     },
 
     render(gl, programInfo, modelViewMatrix) {
-        GLMatrix.mat4.multiply(modelViewMatrix, this.rotationMatrix, modelViewMatrix);
+        GLMatrix.mat4.multiply(modelViewMatrix, modelViewMatrix, this.rotationMatrix);
         return modelViewMatrix;
     }
 };

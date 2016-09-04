@@ -108,5 +108,6 @@ const InputManager = () => {
 };
 
 InputManager.prototype = InputManagerProto;
+InputManager.KEY_TO_CODE = InputManagerProto.KEY_TO_CODE;
 
 module.exports = InputManager;

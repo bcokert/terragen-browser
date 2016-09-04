@@ -3,15 +3,6 @@
 const GLMatrix = require("gl-matrix");
 
 const PositionableProto = {
-    /**
-     * Translates the object by the given vector
-     * @param {Float32Array} dVector - A vec3 describing the direction and magnitude of the translation
-     * @returns {undefined}
-     */
-    translate(dVector) {
-        GLMatrix.vec3.add(this.position, this.position, dVector);
-    },
-
     render(gl, programInfo, modelViewMatrix) {
         GLMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, this.position);
         return modelViewMatrix;

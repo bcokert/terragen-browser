@@ -6,7 +6,7 @@ const ColorableProto = {
      * @param {Float32Array} newColor - A vec4 describing the new color
      * @returns {undefined}
      */
-    color(newColor) {
+    setColor(newColor) {
         this.color = newColor;
     },
 
