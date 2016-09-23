@@ -1,5 +1,7 @@
 "use strict";
 
+const RenderComponent = require("../render-component");
+
 const TexturableProto = {
     /**
      * Binds and buffers uv data
@@ -9,14 +11,6 @@ const TexturableProto = {
     updateUVArray(gl) {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, this.uvArray, gl.STATIC_DRAW);
-    },
-
-    render(gl, programInfo, modelViewMatrix) {
-        if (gl.isTexture(this.texture)) {
-            programInfo.uniforms.texture1.set(this.texture);
-            programInfo.attributes.textureCoordinate.set(this.uvBuffer);
-        }
-        return modelViewMatrix;
     }
 };
 
@@ -26,22 +20,32 @@ const TexturableProto = {
  * @param {Float32Array} uvArray - an array containing uv coordinates for this object
  * @param {WebGLTexture|null} texture
  * @constructor
- * @returns {Texturable}
+ * @returns {Object}
  */
 const Texturable = (gl, uvArray, texture) => {
     if (Object.prototype.toString.call(uvArray) !== "[object Float32Array]") {
         throw new TypeError("Invalid uvArray provided to Texturable factory.");
     }
 
-    const instance = Object.assign(Object.create(TexturableProto), {
-        uvArray: uvArray,
-        uvBuffer: gl.createBuffer(),
-        texture: texture
+    return RenderComponent({
+        name: "Texturable",
+        proto: TexturableProto,
+        properties: {
+            uvArray: uvArray,
+            uvBuffer: gl.createBuffer(),
+            texture: texture
+        },
+        initializer: instance => {
+            instance.updateUVArray(gl);
+        },
+        renderFn: (instance, gl, programInfo, modelViewMatrix) => {
+            if (gl.isTexture(instance.texture)) {
+                programInfo.uniforms.texture1.set(instance.texture);
+                programInfo.attributes.textureCoordinate.set(instance.uvBuffer);
+            }
+            return modelViewMatrix;
+        }
     });
-
-    instance.updateUVArray(gl);
-
-    return instance;
 };
 
 Texturable.prototype = TexturableProto;

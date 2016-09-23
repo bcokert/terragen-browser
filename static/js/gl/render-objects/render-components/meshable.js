@@ -1,5 +1,7 @@
 "use strict";
 
+const RenderComponent = require("../render-component");
+
 const MeshableProto = {
     /**
      * Binds and buffers vertex data
@@ -19,16 +21,6 @@ const MeshableProto = {
     updateIndexBuffer(gl) {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indexArray, gl.STATIC_DRAW);
-    },
-
-    render(gl, programInfo, modelViewMatrix) {
-        programInfo.attributes.vertexPosition.set(this.vertexBuffer);
-        return modelViewMatrix;
-    },
-
-    finishRender(gl, programInfo, modelViewMatrix) {
-        programInfo.uniforms.modelViewMatrix.set(modelViewMatrix);
-        gl.drawElements(gl.TRIANGLES, this.indexArray.length, gl.UNSIGNED_SHORT, 0);
     }
 };
 
@@ -38,7 +30,7 @@ const MeshableProto = {
  * @param {Float32Array} vertexArray - an array containing triples of floats, each representing a vertex
  * @param {Uint16Array} indexArray - an array containing triples of indexes, each pointing to 3 vertices that make up a triangle
  * @constructor
- * @returns {Meshable}
+ * @returns {Object}
  */
 const Meshable = (gl, vertexArray, indexArray) => {
     if (Object.prototype.toString.call(vertexArray) !== "[object Float32Array]") {
@@ -48,19 +40,28 @@ const Meshable = (gl, vertexArray, indexArray) => {
         throw new TypeError("Invalid indexArray provided to Meshable factory.");
     }
 
-    const instance = Object.assign(Object.create(MeshableProto), {
-        vertexArray: vertexArray,
-        vertexBuffer: gl.createBuffer(),
-        indexArray: indexArray,
-        indexBuffer: gl.createBuffer()
+    return RenderComponent({
+        name: "Meshable",
+        initializer: instance => {
+            instance.updateVertexBuffer(gl);
+            instance.updateIndexBuffer(gl);
+        },
+        proto: MeshableProto,
+        properties: {
+            vertexArray: vertexArray,
+            vertexBuffer: gl.createBuffer(),
+            indexArray: indexArray,
+            indexBuffer: gl.createBuffer()
+        },
+        renderFn: (instance, gl, programInfo, modelViewMatrix) => {
+            programInfo.attributes.vertexPosition.set(instance.vertexBuffer);
+            return modelViewMatrix;
+        },
+        finishRenderFn: (instance, gl, programInfo, modelViewMatrix) => {
+            programInfo.uniforms.modelViewMatrix.set(modelViewMatrix);
+            gl.drawElements(gl.TRIANGLES, instance.indexArray.length, gl.UNSIGNED_SHORT, 0);
+        }
     });
-
-    instance.updateVertexBuffer(gl);
-    instance.updateIndexBuffer(gl);
-
-    return instance;
 };
-
-Meshable.prototype = MeshableProto;
 
 module.exports = Meshable;

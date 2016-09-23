@@ -1,5 +1,6 @@
 "use strict";
 
+const RenderComponent = require("../render-component");
 const GLMatrix = require("gl-matrix");
 
 const RotatableProto = {
@@ -19,11 +20,6 @@ const RotatableProto = {
             GLMatrix.quat.rotateZ(this.quaternion, this.quaternion, rotation[2]);
         }
         GLMatrix.mat4.fromQuat(this.rotationMatrix, this.quaternion);
-    },
-
-    render(gl, programInfo, modelViewMatrix) {
-        GLMatrix.mat4.multiply(modelViewMatrix, modelViewMatrix, this.rotationMatrix);
-        return modelViewMatrix;
     }
 };
 
@@ -32,23 +28,29 @@ const RotatableProto = {
  * Performs some caching to speed up rotation matrix generation.
  * @param {Float32Array} rotation - A vector representing the angles of rotation around the x, y, and z axis
  * @constructor
- * @returns {Rotatable}
+ * @returns {Object}
  */
 const Rotatable = (rotation) => {
     if (Object.prototype.toString.call(rotation) !== "[object Float32Array]" || rotation.length != 3) {
         throw new TypeError("Invalid rotation provided to Rotatable factory.");
     }
 
-    const instance = Object.assign(Object.create(RotatableProto), {
-        rotation: rotation,
-        quaternion: GLMatrix.quat.create(),
-        rotationMatrix: GLMatrix.mat4.create()
+    return RenderComponent({
+        name: "Rotatable",
+        proto: RotatableProto,
+        properties: {
+            rotation: rotation,
+            quaternion: GLMatrix.quat.create(),
+            rotationMatrix: GLMatrix.mat4.create()
+        },
+        initializer: instance => {
+            instance.rotate(rotation);
+        },
+        renderFn: (instance, gl, programInfo, modelViewMatrix) => {
+            GLMatrix.mat4.multiply(modelViewMatrix, modelViewMatrix, instance.rotationMatrix);
+            return modelViewMatrix;
+        }
     });
-    instance.rotate(rotation);
-
-    return instance;
 };
-
-Rotatable.prototype = RotatableProto;
 
 module.exports = Rotatable;

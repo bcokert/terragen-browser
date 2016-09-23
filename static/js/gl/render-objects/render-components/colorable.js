@@ -1,5 +1,7 @@
 "use strict";
 
+const RenderComponent = require("../render-component");
+
 const ColorableProto = {
     /**
      * Changes the color of the object
@@ -8,11 +10,6 @@ const ColorableProto = {
      */
     setColor(newColor) {
         this.color = newColor;
-    },
-
-    render(gl, programInfo, modelViewMatrix) {
-        programInfo.uniforms.inputColor.set(this.color);
-        return modelViewMatrix;
     }
 };
 
@@ -20,15 +17,23 @@ const ColorableProto = {
  * Adds the ability for an object to be colored.
  * @param {Float32Array} color
  * @constructor
- * @returns {Meshable}
+ * @returns {Object}
  */
 const Colorable = (color) => {
     if (Object.prototype.toString.call(color) !== "[object Float32Array]" || color.length != 4) {
         throw new TypeError("Invalid color provided to RenderObject factory.");
     }
 
-    return Object.assign(Object.create(ColorableProto), {
-        color: color
+    return RenderComponent({
+        name: "Colorable",
+        proto: ColorableProto,
+        properties: {
+            color: color
+        },
+        renderFn: (instance, gl, programInfo, modelViewMatrix) => {
+            programInfo.uniforms.inputColor.set(instance.color);
+            return modelViewMatrix;
+        }
     });
 };
 

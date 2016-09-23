@@ -8,7 +8,7 @@ var ResourceLoader = require("../../gl/resource/resource-loader");
 var InputManager = require("../../gl/input/input-manager");
 var ProgramManager = require("../../gl/program/program-manager");
 var ProgramCompiler = require("../../gl/program/program-compiler");
-var BasicObject = require("../../gl/render-objects/basic-object");
+var Cube = require("../../gl/render-objects/cube");
 
 require("./webgl.less");
 
@@ -85,13 +85,13 @@ class WebGL extends React.Component {
                 });
 
                 // Create test cubes
-                var cubes = [1, 1, 1].map((size, i) => (BasicObject(
+                var cubes = [1, 1, 1].map((size, i) => Cube(
                     gl,
                     new Float32Array([(i - 1) * 5, i - 1, -8]),
                     GLMatrix.vec4.fromValues(Math.random(), Math.random(), Math.random(), 1),
                     resources.textures["testWoodTexture"],
                     inputManager
-                )));
+                ));
 
                 // Start the system, which starts the render loop and logic loop
                 this.start(gl, programManager, perspectiveMatrix, modelViewMatrix, cameraRotationMatrix, cubes);

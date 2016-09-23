@@ -1,10 +1,9 @@
 "use strict";
 
+const RenderComponent = require("../render-component");
 const GLMatrix = require("gl-matrix");
 
 const MovableProto = {
-    updateComponentMovable: true,
-
     /**
      * Moves the object by the given vec3
      * @param {Float32Array} dVector
@@ -17,22 +16,24 @@ const MovableProto = {
 
 /**
  * Adds the ability for an object to be movable.
- * @param {Object} instance - The instance to be composed with
  * @param {number} maxSpeed - The max speed for the object
  * @constructor
  * @returns {Object}
  */
-const Movable = (instance, maxSpeed) => {
-    if (!instance.position) {
-        throw new TypeError("The Movable update component depends on a 'position' property.");
-    }
-    if (!instance.updateQueue) {
-        throw new TypeError("The Movable update component depends on an 'updateQueue' property.");
-    }
-
-    instance.__proto__ = Object.assign(instance.__proto__, MovableProto);
-
-    instance.updateQueue.push(dtSeconds => {
+const Movable = maxSpeed => RenderComponent({
+    name: "Movable",
+    validator: instance => {
+        if (!instance.position) {
+            throw new TypeError("The Movable update component depends on a 'position' property.");
+        }
+    },
+    proto: MovableProto,
+    properties: {
+        velocity: GLMatrix.vec3.create([0, 0, 0]),
+        maxSpeed: maxSpeed,
+        acceleration: GLMatrix.vec3.create([0, 0, 0])
+    },
+    updateFn: (instance, dtSeconds) => {
         for (let i = 0; i < instance.position.length; i++) {
             instance.velocity[i] += instance.acceleration[i] * dtSeconds;
             if (instance.velocity[i] > instance.maxSpeed) {
@@ -43,13 +44,7 @@ const Movable = (instance, maxSpeed) => {
 
             instance.position[i] += instance.velocity[i] * dtSeconds;
         }
-    });
-
-    return Object.assign(instance, {
-        velocity: GLMatrix.vec3.create([0, 0, 0]),
-        maxSpeed: maxSpeed,
-        acceleration: GLMatrix.vec3.create([0, 0, 0])
-    });
-};
+    }
+});
 
 module.exports = Movable;
